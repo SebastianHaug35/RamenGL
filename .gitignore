@@ -1,4 +1,6 @@
 **/build/**
-**/dependencies/**
+/dependencies/*
+!/dependencies/glad/
+!/dependencies/glad/**
 **/.cache
 **/.DS_Store
