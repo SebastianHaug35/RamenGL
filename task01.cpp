@@ -74,7 +74,7 @@ int main(int argc, char** argv)
 
         /* Rendering */
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glClearColor(128, 100, 100, 255);
+        glClearColor(1.0f, 0.95f, 0.0f, 1.0f);
         SDL_GL_SwapWindow(g_pWindow);
     }
 
