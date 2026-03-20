@@ -125,6 +125,11 @@ class Shader
         glUseProgram(m_Program);
     }
 
+    void Delete()
+    {
+        glDeleteProgram(m_Program);
+    }
+
   private:
     bool CompileShader(const char* shaderFilename, GLuint* shader, GLenum shaderType)
     {
@@ -301,6 +306,11 @@ int main(int argc, char** argv)
         fprintf(stderr, "Could not load shader.\n");
     }
 
+    /* Dummy VAO. */
+    GLuint VAO;
+    glCreateVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
     /* Create a model on GPU */
     Model model{};
     if ( !model.Load("./models/cylinder.obj") )
@@ -310,6 +320,7 @@ int main(int argc, char** argv)
 
     bool isRunning = true;
     SDL_GL_SetSwapInterval(1); /* 1 = VSync enabledm 0 = VSync disabled */
+    glPointSize(20.0f);        // TODO: Delete later.
     while ( isRunning )
     {
         SDL_Event e;
@@ -342,12 +353,17 @@ int main(int argc, char** argv)
         glClearColor(1.0f, 0.95f, 0.0f, 1.0f);
 
         shader.Use();
-        glBindBuffer(GL_ARRAY_BUFFER, model.GetBuffer());
-        glDrawArrays(GL_TRIANGLES, 0, model.NumVertices());
+        // glBindBuffer(GL_ARRAY_BUFFER, model.GetBuffer());
+        glDrawArrays(GL_POINTS, 0, 1);
 
         SDL_GL_SwapWindow(g_pWindow);
     }
 
+    /* GL Resources shutdown. */
+    shader.Delete();
+    glDeleteVertexArrays(1, &VAO);
+
+    /* SDL Shutdown */
     SDL_GL_DestroyContext(g_glContext);
     SDL_DestroyWindow(g_pWindow);
     SDL_Quit();
