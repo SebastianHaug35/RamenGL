@@ -248,7 +248,7 @@ struct Mat4f
 
     const float* Data()
     {
-        return (float*)columns;
+        return (float*)columns[ 0 ].components;
     }
 
     const char* ToString() const
@@ -656,7 +656,26 @@ int main(int argc, char** argv)
 
     /* View mat */
     Mat4f viewMat = Mat4f::Identity(); //LookAt(camera);
+#if 1
     printf("viewMat: \n%s\n", viewMat.ToString());
+    const float* viewMatData = viewMat.Data();
+    printf("viewMatData: %f\n", viewMatData[ 0 ]);
+    printf("viewMatData: %f\n", viewMatData[ 1 ]);
+    printf("viewMatData: %f\n", viewMatData[ 2 ]);
+    printf("viewMatData: %f\n", viewMatData[ 3 ]);
+    printf("viewMatData: %f\n", viewMatData[ 4 ]);
+    printf("viewMatData: %f\n", viewMatData[ 5 ]);
+    printf("viewMatData: %f\n", viewMatData[ 6 ]);
+    printf("viewMatData: %f\n", viewMatData[ 7 ]);
+    printf("viewMatData: %f\n", viewMatData[ 8 ]);
+    printf("viewMatData: %f\n", viewMatData[ 9 ]);
+    printf("viewMatData: %f\n", viewMatData[ 10 ]);
+    printf("viewMatData: %f\n", viewMatData[ 11 ]);
+    printf("viewMatData: %f\n", viewMatData[ 12 ]);
+    printf("viewMatData: %f\n", viewMatData[ 13 ]);
+    printf("viewMatData: %f\n", viewMatData[ 14 ]);
+    printf("viewMatData: %f\n", viewMatData[ 15 ]);
+#endif
 
     /* Projection mat */
     Mat4f projMat = Mat4f::Identity();
