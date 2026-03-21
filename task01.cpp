@@ -75,6 +75,13 @@ struct Vec3f
         z = _z;
     }
 
+    Vec3f(float s)
+    {
+        x = s;
+        y = s;
+        z = s;
+    }
+
     Vec3f()
     {
         x = 0.0f;
@@ -96,12 +103,121 @@ struct Vec3f
 
     float& operator[](const int index)
     {
+        assert(index < 3);
         return components[ index ];
+    }
+
+    Vec3f operator-(const Vec3f& right) const
+    {
+        return Vec3f{ x - right.x, y - right.y, z - right.z };
+    }
+
+    Vec3f operator+(const Vec3f& right) const
+    {
+        return Vec3f{ x + right.x, y + right.y, z + right.z };
     }
 
     Vec3f operator/(float s) const
     {
         return Vec3f{ x / s, y / s, z / s };
+    }
+};
+
+struct Vec4f
+{
+    Vec4f(float _x, float _y, float _z, float _w)
+    {
+        x = _x;
+        y = _y;
+        z = _z;
+        w = _w;
+    }
+
+    Vec4f(float s)
+    {
+        x = s;
+        y = s;
+        z = s;
+        w = s;
+    }
+
+    Vec4f()
+    {
+        x = 0.0f;
+        y = 0.0f;
+        z = 0.0f;
+        w = 0.0f;
+    }
+
+    Vec4f(const Vec3f& v3)
+    {
+        Vec4f{ v3.x, v3.y, v3.z, 1.0f };
+    }
+
+    union
+    {
+        float x, y, z, w;
+        float components[ 4 ];
+    };
+
+    const float operator[](const int index) const
+    {
+        assert(index < 4);
+        return components[ index ];
+    }
+
+    Vec4f operator-(const Vec4f& right) const
+    {
+        return Vec4f{ x - right.x, y - right.y, z - right.z, w - right.w };
+    }
+
+    Vec4f operator+(const Vec4f& right) const
+    {
+        return Vec4f{ x + right.x, y + right.y, z + right.z, w - right.w };
+    }
+
+    float& operator[](const int index)
+    {
+        assert(index < 4);
+        return components[ index ];
+    }
+
+    Vec4f operator/(float s) const
+    {
+        return Vec4f{ x / s, y / s, z / s, w / s };
+    }
+};
+
+struct Mat4f
+{
+    union
+    {
+        float elements[ 16 ];
+        Vec4f columns[ 4 ];
+    };
+
+    Mat4f()
+    {
+        columns[ 0 ] = Vec4f{};
+        columns[ 1 ] = Vec4f{};
+        columns[ 2 ] = Vec4f{};
+        columns[ 3 ] = Vec4f{};
+    }
+
+    Mat4f(const Vec4f& col1, const Vec4f& col2, const Vec4f& col3, const Vec4f& col4)
+    {
+        columns[ 0 ] = col1;
+        columns[ 1 ] = col2;
+        columns[ 2 ] = col3;
+        columns[ 3 ] = col4;
+    }
+
+    static Mat4f Identity()
+    {
+        return Mat4f{ Vec4f{ 1.0f, 0.0f, 0.0f, 0.0f },
+                      Vec4f{ 0.0f, 1.0f, 0.0f, 0.0f },
+                      Vec4f{ 0.0f, 0.0f, 1.0f, 0.0f },
+                      Vec4f{ 0.0f, 0.0f, 0.0f, 1.0f } };
     }
 };
 
@@ -115,7 +231,18 @@ float Length(const Vec3f& v)
     return sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 }
 
+float Length(const Vec4f& v)
+{
+    return sqrt(v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w);
+}
+
 Vec3f Normalize(const Vec3f& v)
+{
+    float len = Length(v);
+    return v / len;
+}
+
+Vec4f Normalize(const Vec4f& v)
 {
     float len = Length(v);
     return v / len;
@@ -292,12 +419,34 @@ class Model
 class Camera
 {
   public:
-    Camera(Vec3f position, Vec3f forward)
+    Camera(const Vec3f& position, const Vec3f& target)
     {
-        m_Position  = position;
-        m_Forward   = forward;
-        Vec3f up    = Vec3f{ 0.0f, 1.0f, 0.0f };
-        Vec3f right = Normalize(Cross(m_Forward, up));
+        Vec3f forward = Normalize(target - position);
+        m_Position    = position;
+        m_Forward     = forward;
+        Vec3f up      = Vec3f{ 0.0f, 1.0f, 0.0f };
+        Vec3f right   = Normalize(Cross(m_Forward, up));
+        m_Up          = Normalize(Cross(right, m_Forward));
+    }
+
+    const Vec3f& GetPosition() const
+    {
+        return m_Position;
+    }
+
+    const Vec3f& GetForward() const
+    {
+        return m_Forward;
+    }
+
+    const Vec3f& GetUp() const
+    {
+        return m_Up;
+    }
+
+    const Vec3f GetRight() const
+    {
+        return Normalize(Cross(m_Forward, m_Up));
     }
 
   private:
@@ -305,6 +454,11 @@ class Camera
     Vec3f m_Forward;
     Vec3f m_Up;
 };
+
+Mat4f LookAt(const Camera& camera)
+{
+    return Mat4f{ camera.GetRight(), camera.GetUp(), camera.GetForward(), camera.GetPosition() };
+}
 
 static std::vector<Vertex> g_Cone;
 static std::vector<Vertex> g_Cap;
@@ -438,6 +592,9 @@ int main(int argc, char** argv)
 
     /* Create Cylinder and upload to GPU */
     CreateGeometry();
+
+    /* Create camera */
+    Camera camera(Vec3f{ 0.0f, 0.0f, -10.0f }, Vec3f{ 0.0f });
 
     /* VAO. */
     GLuint VAO;
