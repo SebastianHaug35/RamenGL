@@ -68,32 +68,43 @@ File ReadFile(const char* file)
 
 struct Vec3f
 {
+    float components[ 3 ];
+
     Vec3f(float _x, float _y, float _z)
     {
-        x = _x;
-        y = _y;
-        z = _z;
+        components[ 0 ] = _x;
+        components[ 1 ] = _y;
+        components[ 2 ] = _z;
     }
 
     Vec3f(float s)
     {
-        x = s;
-        y = s;
-        z = s;
+        components[ 0 ] = s;
+        components[ 1 ] = s;
+        components[ 2 ] = s;
     }
 
     Vec3f()
     {
-        x = 0.0f;
-        y = 0.0f;
-        z = 0.0f;
+        components[ 0 ] = 0.0f;
+        components[ 1 ] = 0.0f;
+        components[ 2 ] = 0.0f;
     }
 
-    union
+    const float& x() const
     {
-        float x, y, z;
-        float components[ 3 ];
-    };
+        return components[ 0 ];
+    }
+
+    const float& y() const
+    {
+        return components[ 1 ];
+    }
+
+    const float& z() const
+    {
+        return components[ 2 ];
+    }
 
     const float operator[](const int index) const
     {
@@ -109,56 +120,75 @@ struct Vec3f
 
     Vec3f operator-(const Vec3f& right) const
     {
-        return Vec3f{ x - right.x, y - right.y, z - right.z };
+        return Vec3f{ x() - right.x(), y() - right.y(), z() - right.z() };
     }
 
     Vec3f operator+(const Vec3f& right) const
     {
-        return Vec3f{ x + right.x, y + right.y, z + right.z };
+        return Vec3f{ x() + right.x(), y() + right.y(), z() + right.z() };
     }
 
     Vec3f operator/(float s) const
     {
-        return Vec3f{ x / s, y / s, z / s };
+        return Vec3f{ x() / s, y() / s, z() / s };
     }
 };
 
 struct Vec4f
 {
+    float components[ 4 ];
+
     Vec4f(float _x, float _y, float _z, float _w)
     {
-        x = _x;
-        y = _y;
-        z = _z;
-        w = _w;
+        components[ 0 ] = _x;
+        components[ 1 ] = _y;
+        components[ 2 ] = _z;
+        components[ 3 ] = _w;
     }
 
     Vec4f(float s)
     {
-        x = s;
-        y = s;
-        z = s;
-        w = s;
+        components[ 0 ] = s;
+        components[ 1 ] = s;
+        components[ 2 ] = s;
+        components[ 3 ] = s;
     }
 
     Vec4f()
     {
-        x = 0.0f;
-        y = 0.0f;
-        z = 0.0f;
-        w = 0.0f;
+        components[ 0 ] = 0.0f;
+        components[ 1 ] = 0.0f;
+        components[ 2 ] = 0.0f;
+        components[ 3 ] = 0.0f;
     }
 
     Vec4f(const Vec3f& v3)
     {
-        Vec4f{ v3.x, v3.y, v3.z, 1.0f };
+        components[ 0 ] = v3.x();
+        components[ 1 ] = v3.y();
+        components[ 2 ] = v3.z();
+        components[ 3 ] = 1.0f;
     }
 
-    union
+    const float& x() const
     {
-        float x, y, z, w;
-        float components[ 4 ];
-    };
+        return components[ 0 ];
+    }
+
+    const float& y() const
+    {
+        return components[ 1 ];
+    }
+
+    const float& z() const
+    {
+        return components[ 2 ];
+    }
+
+    const float& w() const
+    {
+        return components[ 3 ];
+    }
 
     const float operator[](const int index) const
     {
@@ -168,12 +198,12 @@ struct Vec4f
 
     Vec4f operator-(const Vec4f& right) const
     {
-        return Vec4f{ x - right.x, y - right.y, z - right.z, w - right.w };
+        return Vec4f{ x() - right.x(), y() - right.y(), z() - right.z(), w() - right.w() };
     }
 
     Vec4f operator+(const Vec4f& right) const
     {
-        return Vec4f{ x + right.x, y + right.y, z + right.z, w - right.w };
+        return Vec4f{ x() + right.x(), y() + right.y(), z() + right.z(), w() + right.w() };
     }
 
     float& operator[](const int index)
@@ -184,17 +214,13 @@ struct Vec4f
 
     Vec4f operator/(float s) const
     {
-        return Vec4f{ x / s, y / s, z / s, w / s };
+        return Vec4f{ x() / s, y() / s, z() / s, w() / s };
     }
 };
 
 struct Mat4f
 {
-    union
-    {
-        float elements[ 16 ];
-        Vec4f columns[ 4 ];
-    };
+    Vec4f columns[ 4 ];
 
     Mat4f()
     {
@@ -219,21 +245,50 @@ struct Mat4f
                       Vec4f{ 0.0f, 0.0f, 1.0f, 0.0f },
                       Vec4f{ 0.0f, 0.0f, 0.0f, 1.0f } };
     }
+
+    const float* Data()
+    {
+        return (float*)columns;
+    }
+
+    const char* ToString() const
+    {
+        static char buffer[ 256 ];
+        sprintf(buffer,
+                "%.2f, %.2f, %.2f, %.2f\n%.2f, %.2f, %.2f, %.2f\n%.2f, %.2f, %.2f, %.2f\n%.2f, %.2f, %.2f, %.2f\n",
+                columns[ 0 ].x(),
+                columns[ 1 ].x(),
+                columns[ 2 ].x(),
+                columns[ 3 ].x(),
+                columns[ 0 ].y(),
+                columns[ 1 ].y(),
+                columns[ 2 ].y(),
+                columns[ 3 ].y(),
+                columns[ 0 ].z(),
+                columns[ 1 ].z(),
+                columns[ 2 ].z(),
+                columns[ 3 ].z(),
+                columns[ 0 ].w(),
+                columns[ 1 ].w(),
+                columns[ 2 ].w(),
+                columns[ 3 ].w());
+        return buffer;
+    }
 };
 
 Vec3f Cross(const Vec3f& a, const Vec3f& b)
 {
-    return Vec3f{ a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x };
+    return Vec3f{ a.y() * b.z() - a.z() * b.y(), a.z() * b.x() - a.x() * b.z(), a.x() * b.y() - a.y() * b.x() };
 }
 
 float Length(const Vec3f& v)
 {
-    return sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+    return sqrt(v.x() * v.x() + v.y() * v.y() + v.z() * v.z());
 }
 
 float Length(const Vec4f& v)
 {
-    return sqrt(v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w);
+    return sqrt(v.x() * v.x() + v.y() * v.y() + v.z() * v.z() + v.w() * v.w());
 }
 
 Vec3f Normalize(const Vec3f& v)
@@ -594,7 +649,17 @@ int main(int argc, char** argv)
     CreateGeometry();
 
     /* Create camera */
-    Camera camera(Vec3f{ 0.0f, 0.0f, -10.0f }, Vec3f{ 0.0f });
+    Camera camera(Vec3f{ 0.0f, 0.0f, 1.0f }, Vec3f{ 0.0f });
+
+    /* Model mat*/
+    Mat4f modelMat = Mat4f::Identity();
+
+    /* View mat */
+    Mat4f viewMat = Mat4f::Identity(); //LookAt(camera);
+    printf("viewMat: \n%s\n", viewMat.ToString());
+
+    /* Projection mat */
+    Mat4f projMat = Mat4f::Identity();
 
     /* VAO. */
     GLuint VAO;
@@ -641,6 +706,9 @@ int main(int argc, char** argv)
 
         shader.Use();
         glBindVertexArray(VAO);
+        glUniform4fv(0, 4, modelMat.Data());
+        glUniform4fv(1, 4, viewMat.Data());
+        glUniform4fv(2, 4, projMat.Data());
         glDrawArrays(GL_TRIANGLES, 0, model.NumVertices());
 
         SDL_GL_SwapWindow(g_pWindow);
