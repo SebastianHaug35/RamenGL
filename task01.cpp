@@ -303,6 +303,13 @@ Vec4f Normalize(const Vec4f& v)
     return v / len;
 }
 
+Mat4f Inverse(const Mat4f& m)
+{
+    Mat4f result{};
+
+    return result;
+}
+
 struct Vertex
 {
     Vec3f position;
@@ -649,13 +656,13 @@ int main(int argc, char** argv)
     CreateGeometry();
 
     /* Create camera */
-    Camera camera(Vec3f{ 0.0f, 0.0f, 1.0f }, Vec3f{ 0.0f });
+    Camera camera(Vec3f{ 1.0f, 1.0f, 0.5f }, Vec3f{ 0.0f });
 
     /* Model mat*/
     Mat4f modelMat = Mat4f::Identity();
 
     /* View mat */
-    Mat4f viewMat = Mat4f::Identity(); //LookAt(camera);
+    Mat4f viewMat = LookAt(camera);
 #if 1
     printf("viewMat: \n%s\n", viewMat.ToString());
     const float* viewMatData = viewMat.Data();
