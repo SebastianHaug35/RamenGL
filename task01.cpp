@@ -725,9 +725,9 @@ int main(int argc, char** argv)
 
         shader.Use();
         glBindVertexArray(VAO);
-        glUniform4fv(0, 4, modelMat.Data());
-        glUniform4fv(1, 4, viewMat.Data());
-        glUniform4fv(2, 4, projMat.Data());
+        glUniformMatrix4fv(0, 1, GL_FALSE, modelMat.Data());
+        glUniformMatrix4fv(1, 1, GL_FALSE, viewMat.Data());
+        glUniformMatrix4fv(2, 1, GL_FALSE, projMat.Data());
         glDrawArrays(GL_TRIANGLES, 0, model.NumVertices());
 
         SDL_GL_SwapWindow(g_pWindow);
