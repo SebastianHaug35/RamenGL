@@ -704,7 +704,7 @@ int main(int argc, char** argv)
 
     /* Main loop */
     bool isRunning = true;
-    SDL_GL_SetSwapInterval(1); /* 1 = VSync enabledm 0 = VSync disabled */
+    SDL_GL_SetSwapInterval(1); /* 1 = VSync enabled; 0 = VSync disabled */
     glPointSize(20.0f);        // TODO: Delete later.
     while ( isRunning )
     {
