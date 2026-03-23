@@ -498,6 +498,27 @@ Mat4f Inverse(const Mat4f& m)
                  Dot(c, s));
 }
 
+struct Quat
+{
+    float x, y, z, w;
+};
+
+/* Builds a versor from given axis and rotation angle, given in degrees. */
+Quat AngleAxis(const float& x, const float& y, const float& z, const float& angle_dgr)
+{
+    Quat result{};
+
+    const float& angle_rad      = TO_RAD(angle_dgr);
+    const float& half_theta     = angle_rad * 0.5f;
+    const float& sin_half_theta = sinf(half_theta);
+    result.x                    = sin_half_theta * x;
+    result.y                    = sin_half_theta * y;
+    result.z                    = sin_half_theta * z;
+    result.w                    = cosf(half_theta);
+
+    return result;
+}
+
 struct Vertex
 {
     Vec3f position;
@@ -858,7 +879,6 @@ int main(int argc, char** argv)
     Mat4f M2    = Mat4f::Identity();
     Mat4f M1xM2 = M1 * M2;
     printf("M1xM2:\n%s\n", M1xM2.ToString());
-    exit(1);
 
     if ( !SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) )
     {
