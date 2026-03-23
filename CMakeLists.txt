@@ -11,7 +11,9 @@ add_subdirectory(./dependencies/SDL EXCLUDE_FROM_ALL)
 
 add_executable(task01 
     ./dependencies/glad/src/glad.c
+
     ./dependencies/tiny_obj_loader.h
+    
     ./dependencies/imgui/imgui.cpp
     ./dependencies/imgui/imgui_impl_sdl3.cpp
     ./dependencies/imgui/imgui_impl_opengl3.cpp
@@ -19,6 +21,9 @@ add_executable(task01
     ./dependencies/imgui/imgui_tables.cpp
     ./dependencies/imgui/imgui_demo.cpp
     ./dependencies/imgui/imgui_widgets.cpp
+
+    ./ramen/rgl_math.cpp
+    ./ramen/rgl_platform.cpp
 
     task01.cpp)
 target_include_directories(task01 PUBLIC

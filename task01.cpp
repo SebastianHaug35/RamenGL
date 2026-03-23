@@ -17,232 +17,13 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
-#define RAMEN_QUAT_EPSILON (0.0000001)
-#define RAMEN_PI (3.14159265358979323846264338327950288)
-#define TO_RAD(angle) (RAMEN_PI * angle / 180.0f)
-#define TO_DGR(angle) (180.0f * angle / RAMEN_PI)
+#include "ramen/rgl_defines.h"
+#include "ramen/rgl_math.h"
+#include "ramen/rgl_platform.h"
 
 static SDL_Window*   g_pWindow;
 static SDL_Renderer* g_pRenderer;
 static SDL_GLContext g_glContext;
-
-bool FileExists(const char* file)
-{
-    FILE* pFileDesc = nullptr;
-    pFileDesc       = fopen(file, "r");
-    if ( pFileDesc == nullptr )
-    {
-        return false;
-    }
-    fclose(pFileDesc);
-
-    return true;
-}
-
-struct File
-{
-    void Destroy()
-    {
-        if ( data )
-        {
-            free(data);
-            size = 0;
-        }
-    }
-
-    char*  data;
-    size_t size;
-};
-
-File ReadFile(const char* file)
-{
-    FILE* pFileDesc = 0;
-    pFileDesc       = fopen(file, "rb");
-    if ( file == 0 )
-    {
-        return File{};
-    }
-    fseek(pFileDesc, 0L, SEEK_END);
-    size_t size = ftell(pFileDesc);
-    fseek(pFileDesc, 0L, SEEK_SET);
-    char* data = (char*)malloc(size + 1);
-    fread(data, sizeof(char), size, pFileDesc);
-    data[ size ] = '\0';
-    fclose(pFileDesc);
-
-    return File{ data, size };
-}
-
-struct Vec3f
-{
-    float x;
-    float y;
-    float z;
-
-    Vec3f(float _x, float _y, float _z)
-    {
-        x = _x;
-        y = _y;
-        z = _z;
-    }
-
-    Vec3f(float s)
-    {
-        x = s;
-        y = s;
-        z = s;
-    }
-
-    Vec3f()
-    {
-        x = 0.0f;
-        y = 0.0f;
-        z = 0.0f;
-    }
-
-    const float operator[](const int index) const
-    {
-        assert(index < 3);
-        return (&x)[ index ];
-    }
-
-    float& operator[](const int index)
-    {
-        assert(index < 3);
-        return (&x)[ index ];
-    }
-
-    Vec3f operator-(const Vec3f& right) const
-    {
-        return Vec3f{ x - right.x, y - right.y, z - right.z };
-    }
-
-    const Vec3f operator-() const
-    {
-        return Vec3f{ -x, -y, -z };
-    }
-
-    Vec3f operator+(const Vec3f& right) const
-    {
-        return Vec3f{ x + right.x, y + right.y, z + right.z };
-    }
-
-    Vec3f operator/(float s) const
-    {
-        return Vec3f{ x / s, y / s, z / s };
-    }
-
-    Vec3f operator*(const Vec3f& right) const
-    {
-        return Vec3f{ x * right.x, y * right.y, z * right.z };
-    }
-
-    /* Vector * Scalar */
-    Vec3f operator*(const float& s) const
-    {
-        return Vec3f{ s * x, s * y, s * z };
-    }
-
-    Vec3f& operator*=(const float& s)
-    {
-        x *= s;
-        y *= s;
-        z *= s;
-
-        return *this;
-    }
-};
-
-struct Vec4f
-{
-    float x;
-    float y;
-    float z;
-    float w;
-
-    Vec4f(float _x, float _y, float _z, float _w)
-    {
-        x = _x;
-        y = _y;
-        z = _z;
-        w = _w;
-    }
-
-    Vec4f(float s)
-    {
-        x = s;
-        y = s;
-        z = s;
-        w = s;
-    }
-
-    Vec4f()
-    {
-        x = 0.0f;
-        y = 0.0f;
-        z = 0.0f;
-        w = 0.0f;
-    }
-
-    Vec4f(const Vec3f& v3)
-    {
-        x = v3.x;
-        y = v3.y;
-        z = v3.z;
-        w = 1.0f;
-    }
-
-    Vec4f(const Vec3f& v3, const float& s)
-    {
-        x = v3.x;
-        y = v3.y;
-        z = v3.z;
-        w = s;
-    }
-
-    const float& operator[](const int index) const
-    {
-        assert(index < 4);
-        return (&x)[ index ];
-    }
-
-    float& operator[](const int index)
-    {
-        assert(index < 4);
-        return (&x)[ index ];
-    }
-
-    Vec4f operator-(const Vec4f& right) const
-    {
-        return Vec4f{ x - right.x, y - right.y, z - right.z, w - right.w };
-    }
-
-    const Vec4f operator-() const
-    {
-        return Vec4f{ -x, -y, -z, -w };
-    }
-
-    Vec4f operator+(const Vec4f& right) const
-    {
-        return Vec4f{ x + right.x, y + right.y, z + right.z, w + right.w };
-    }
-
-    Vec4f operator/(float s) const
-    {
-        return Vec4f{ x / s, y / s, z / s, w / s };
-    }
-
-    Vec4f operator*(const Vec4f& right) const
-    {
-        return Vec4f{ x * right.x, y * right.y, z * right.z, w * right.w };
-    }
-
-    /* Vector * Scalar */
-    Vec4f operator*(const float& s) const
-    {
-        return Vec4f{ s * x, s * y, s * z, s * w };
-    }
-};
 
 /* 4x4 Matrix with floats.
  * Stores elements in column major order.
@@ -369,6 +150,22 @@ struct Mat4f
 
                 result(row, col) = sum;
             }
+        }
+
+        return result;
+    }
+
+    Vec4f operator*(const Vec4f& v)
+    {
+        Vec4f result{};
+        for ( int row = 0; row < 4; row++ )
+        {
+            float value = 0.0f;
+            for ( int k = 0; k < 4; k++ )
+            {
+                value += (*this)(row, k) * v[ k ];
+            }
+            result[ row ] = value;
         }
 
         return result;
@@ -502,6 +299,23 @@ Mat4f Inverse(const Mat4f& m)
 struct Quat
 {
     float x, y, z, w;
+
+    const Quat operator*(const Quat& rhs) const
+    {
+        return Quat{ rhs.w * w - rhs.x * x - rhs.y * y - rhs.z * z,
+                     rhs.w * x + rhs.x * w - rhs.y * z + rhs.z * y,
+                     rhs.w * y + rhs.x * z + rhs.y * w - rhs.z * x,
+                     rhs.w * z - rhs.x * y + rhs.y * x + rhs.z * w };
+    }
+
+    Quat& operator/=(const float s)
+    {
+        x /= s;
+        y /= s;
+        z /= s;
+        w /= s;
+        return *this;
+    }
 };
 
 /* Builds a versor from given axis and rotation angle, given in degrees.
@@ -524,8 +338,19 @@ Quat AngleAxis(const float& x, const float& y, const float& z, const float& angl
     return result;
 }
 
-Mat4f AsMatrix(const Quat& q)
+Quat AngleAxis(const Vec3f& v, const float& angleDgr)
 {
+    return AngleAxis(v.x, v.y, v.z, angleDgr);
+}
+
+Mat4f AsMat4f(Quat& q)
+{
+    float len2 = q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w;
+    if ( fabs(len2 - 1.0f) > RAMEN_QUAT_EPSILON )
+    {
+        q /= sqrt(len2);
+    }
+
     const float& x  = q.x;
     const float& y  = q.y;
     const float& z  = q.z;
@@ -534,11 +359,6 @@ Mat4f AsMatrix(const Quat& q)
     const float  y2 = y * y;
     const float  z2 = z * z;
     const float  w2 = w * w;
-
-    if ( x2 + y2 + z2 + w2 < RAMEN_QUAT_EPSILON )
-    {
-        // TODO: Normalize first.
-    }
 
     return Mat4f{ Vec4f{ 1.0f - 2.0f * y2 - 2.0f * z2, 2.0f * x * y + 2.0f * w * z, 2.0f * x * z - 2.0f * w * y, 0.0f },
                   Vec4f{ 2.0f * x * y - 2.0f * w * z, 1.0f - 2.0f * x2 - 2.0f * z2, 2.0f * y * z + 2.0f * w * x, 0.0f },
@@ -719,12 +539,13 @@ class Camera
   public:
     Camera(const Vec3f& position, const Vec3f& target)
     {
-        Vec3f forward = Normalize(target - position);
-        m_Position    = position;
-        m_Forward     = forward;
-        Vec3f up      = Vec3f{ 0.0f, 1.0f, 0.0f };
-        Vec3f right   = Normalize(Cross(m_Forward, up));
-        m_Up          = Normalize(Cross(right, m_Forward));
+        Vec3f forward  = Normalize(target - position);
+        m_Position     = position;
+        m_Forward      = forward;
+        Vec3f up       = Vec3f{ 0.0f, 1.0f, 0.0f };
+        Vec3f right    = Normalize(Cross(m_Forward, up));
+        m_Up           = Normalize(Cross(right, m_Forward));
+        m_qOrientation = AngleAxis(m_Forward, 0.0f);
     }
 
     const Vec3f& GetPosition() const
@@ -753,12 +574,23 @@ class Camera
         Vec3f newForward = Normalize(target - m_Position);
         Vec3f newSide    = Normalize(Cross(newForward, Vec3f{ 0.0f, 1.0f, 0.0f }));
         Vec3f newUp      = Normalize(Cross(newSide, newForward));
+        m_qOrientation   = AngleAxis(newForward, 0.0f);
+    }
+
+    void RotateAroundUp(const float& angle)
+    {
+        Quat qRot      = AngleAxis(m_Up, angle);
+        m_qOrientation = qRot * m_qOrientation;
+        Mat4f rotMat   = AsMat4f(m_qOrientation);
+        m_Forward      = Vec3f{ rotMat * Vec4f{ m_Forward } }; // TODO: Create 3x3 rotation matrix to avoid conversions.
+        m_Up           = rotMat * m_Up;
     }
 
   private:
     Vec3f m_Position;
     Vec3f m_Forward;
     Vec3f m_Up;
+    Quat  m_qOrientation;
 };
 
 Mat4f LookAt(const Vec3f& position, const Vec3f& target, const Vec3f& up)
