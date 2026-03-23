@@ -33,12 +33,15 @@ int main(int argc, char** argv)
         fprintf(stderr, "Could not load shader.\n");
     }
 
-    /* Create a model on GPU */
+    /* Load model data from disk */
     Model model{};
     if ( !model.Load("./models/stormtrooper.obj") )
     {
         fprintf(stderr, "Could not load model file.\n");
     }
+
+    // TODO: Create vertex layout via VAO.
+    // TODO: Create a buffer on GPU and upload the model's vertices.
 
     /* Create camera */
     Camera camera(Vec3f{ 0.0f, 0.0f, 20.0f }, Vec3f{ 0.0f, 0.0f, 0.0f });
@@ -46,26 +49,17 @@ int main(int argc, char** argv)
     /* Model mat*/
     Mat4f modelMat = Mat4f::Identity();
 
-    /* VAO. */
-    GLuint VAO;
-    glCreateVertexArrays(1, &VAO);
-    glVertexArrayVertexBuffer(VAO, 0, model.GetBuffer(), 0, sizeof(Vertex));
-    glVertexArrayAttribBinding(VAO, 0, 0);
-    glVertexArrayAttribFormat(VAO, 0, 3, GL_FLOAT, GL_FALSE, 0);
-    glEnableVertexArrayAttrib(VAO, 0);
-
-    /* Some global GL states */
+    /*  Gobal GL states */
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
-    // glDisable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
+    SDL_GL_SetSwapInterval(1); /* 1 = VSync enabled; 0 = VSync disabled */
+
     /* Main loop */
     bool isRunning = true;
-    SDL_GL_SetSwapInterval(1); /* 1 = VSync enabled; 0 = VSync disabled */
-    glPointSize(20.0f);        // TODO: Delete later.
     while ( isRunning )
     {
         SDL_Event e;
@@ -115,7 +109,9 @@ int main(int argc, char** argv)
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::ShowDemoWindow();
+        // NOTE: Bonus: You can uncomment this and check out
+        // what the UI library can do. We will work with it later.
+        // ImGui::ShowDemoWindow();
 
         /* ImGUI Rendering */
         ImGui::Render();
@@ -125,11 +121,14 @@ int main(int argc, char** argv)
         glClearColor(1.0f, 0.95f, 0.0f, 1.0f);
 
         shader.Use();
-        glBindVertexArray(VAO);
+
+        // TODO: Activate VAO.
+
         glUniformMatrix4fv(0, 1, GL_FALSE, modelMat.Data());
         glUniformMatrix4fv(1, 1, GL_FALSE, viewMat.Data());
         glUniformMatrix4fv(2, 1, GL_FALSE, projMat.Data());
-        glDrawArrays(GL_TRIANGLES, 0, model.NumVertices());
+
+        // TODO: Draw the model.
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -138,7 +137,8 @@ int main(int argc, char** argv)
 
     /* GL Resources shutdown. */
     shader.Delete();
-    glDeleteVertexArrays(1, &VAO);
+
+    // TODO: Delete OpenGL Resources you created (VAO, VBO).
 
     /* Ramen Shutdown */
     pRamen->Shutdown();

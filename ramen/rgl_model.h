@@ -56,16 +56,9 @@ class Model
         }
         printf("m_Vertices.size(): %lu\n", m_Vertices.size());
 
-        UploadToGPU();
-
         modelFile.Destroy();
 
         return true;
-    }
-
-    const GLuint GetBuffer()
-    {
-        return m_Buffer;
     }
 
     const size_t NumVertices()
@@ -73,24 +66,14 @@ class Model
         return m_Vertices.size();
     }
 
+    const std::vector<Vertex> GetVertices() const
+    {
+        return m_Vertices;
+    }
+
   private:
-    void UploadToGPU()
-    {
-        glCreateBuffers(1, &m_Buffer);
-        glNamedBufferData(m_Buffer, m_Vertices.size() * sizeof(Vertex), m_Vertices.data(), GL_STATIC_DRAW);
-    }
-
-    void UnloadFromGPU()
-    {
-        if ( m_Buffer != 0 )
-        {
-            glDeleteBuffers(1, &m_Buffer);
-        }
-    }
-
   private:
     std::vector<tinyobj::shape_t> m_Shapes;
     std::vector<Vertex>           m_Vertices;
-    GLuint                        m_Buffer;
 };
 #endif
