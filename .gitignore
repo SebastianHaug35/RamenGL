@@ -9,3 +9,4 @@ imgui.ini
 **/.cache
 **/models/**
 **/.DS_Store
+**/*.zip
