@@ -14,28 +14,30 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_opengl.h>
 
-#include "ramen/ramen.h"
-#include "ramen/rgl_camera.h"
-#include "ramen/rgl_defines.h"
-#include "ramen/rgl_math.h"
-#include "ramen/rgl_model.h"
-#include "ramen/rgl_shader.h"
+#include "../ramen/ramen.h"
+#include "../ramen/rgl_camera.h"
+#include "../ramen/rgl_defines.h"
+#include "../ramen/rgl_math.h"
+#include "../ramen/rgl_model.h"
+#include "../ramen/rgl_shader.h"
 
 int main(int argc, char** argv)
 {
-    Ramen* pRamen = Ramen::Create();
-    pRamen->Init("Task 02", 800, 600);
+    Filesystem* pFS = Filesystem::Init(argc, argv, "assets");
+
+    Ramen* pRamen = Ramen::Instance();
+    pRamen->Init("GUI", 800, 600);
 
     /* Load shaders. */
     Shader shader{};
-    if ( !shader.Load("./shaders/task01.vert", "./shaders/task01.frag") )
+    if ( !shader.Load("shaders/task02.vert", "shaders/task02.frag") )
     {
         fprintf(stderr, "Could not load shader.\n");
     }
 
     /* Load model data from disk */
     Model model{};
-    if ( !model.Load("./models/stormtrooper.obj") )
+    if ( !model.Load("models/stormtrooper.obj") )
     {
         fprintf(stderr, "Could not load model file.\n");
     }
@@ -44,7 +46,7 @@ int main(int argc, char** argv)
     // TODO: Create a buffer on GPU and upload the model's vertices.
 
     /* Create camera */
-    Camera camera(Vec3f{ 0.0f, 0.0f, 20.0f }, Vec3f{ 0.0f, 0.0f, 0.0f });
+    Camera camera(Vec3f{ 0.0f, 0.0f, 20.0f });
 
     /* Model mat*/
     Mat4f modelMat = Mat4f::Identity();

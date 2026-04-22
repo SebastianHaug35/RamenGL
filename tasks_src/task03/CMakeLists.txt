@@ -1,10 +1,17 @@
 cmake_minimum_required(VERSION 3.30.2)
 project(Tasks VERSION 0.0.1)
 
+if (UNIX)
+    set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
+    set(CMAKE_SKIP_RPATH OFF CACHE BOOL "Skip RPATH" FORCE)
+    # set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+    # set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+    set(CMAKE_INSTALL_RPATH "$ORIGIN/")
+    # set(ldflags "${ldflags} -Wl,-z,origin")
+endif()
+
 add_executable(task03
     ../../dependencies/glad/src/glad.c
-
-    ../../dependencies/tiny_obj_loader.h
 
     ../../dependencies/stb_image.h
     
@@ -27,6 +34,11 @@ add_executable(task03
     ./task03.cpp
 )
 
+set_target_properties(task03 PROPERTIES
+    BUILD_RPATH "$ORIGIN"
+    INSTALL_RPATH "$ORIGIN"
+)
+
 target_include_directories(task03 PUBLIC
     ../../dependencies/glad/include
     ../../dependencies/)
@@ -34,12 +46,3 @@ target_link_libraries(task03
     PRIVATE SDL3::SDL3
     PRIVATE physfs)
 
-
-if (UNIX)
-    set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
-    set(CMAKE_SKIP_RPATH OFF CACHE BOOL "Skip RPATH" FORCE)
-    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-    set(CMAKE_INSTALL_RPATH "$ORIGIN/")
-    set(ldflags "${ldflags} -Wl,-z,origin")
-endif()

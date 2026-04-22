@@ -5,7 +5,10 @@ class Image
 {
   public:
     Image();
-    bool Load(const char* file);
+    bool           Load(const char* file);
+    int            GetWidth();
+    int            GetHeight();
+    unsigned char* Data();
 
   private:
     int            m_Width;

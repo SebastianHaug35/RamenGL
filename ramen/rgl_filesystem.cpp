@@ -14,6 +14,7 @@ Filesystem* Filesystem::Init(int argc, char** argv, const char* baseDir)
         pTheOneAndOnly = new Filesystem();
         PHYSFS_init(argv[ 0 ]);
         char sysBaseDir[ 512 ];
+        memset(sysBaseDir, 0, 512);
         bool pathSet = false;
 
         if ( argc > 1 )
@@ -23,18 +24,21 @@ Filesystem* Filesystem::Init(int argc, char** argv, const char* baseDir)
         }
         if ( !pathSet && baseDir )
         {
-            strcpy(sysBaseDir, baseDir);
+            const char* appDir = PHYSFS_getBaseDir();
+            strcpy(sysBaseDir, appDir);
+            strcat(sysBaseDir, baseDir);
             pathSet = true;
         }
         if ( !pathSet )
         {
-            const char* baseDir = PHYSFS_getBaseDir();
-            strcpy(sysBaseDir, baseDir);
+            const char* appDir = PHYSFS_getBaseDir();
+            strcpy(sysBaseDir, appDir);
         }
+        printf("Mounting system directory: '%s'\n", sysBaseDir);
 
         if ( !PHYSFS_mount(sysBaseDir, "", 1) )
         {
-            printf("Failed to mount: %s\n", baseDir);
+            printf("Failed to mount: %s\n", sysBaseDir);
         }
         else
         {

@@ -38,3 +38,18 @@ bool Image::Load(const char* file)
 
     return true;
 }
+
+int Image::GetWidth()
+{
+    return m_Width;
+}
+
+int Image::GetHeight()
+{
+    return m_Height;
+}
+
+unsigned char* Image::Data()
+{
+    return m_Data;
+}
