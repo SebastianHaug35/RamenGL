@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\Nutzer\master\RamenGL\dependencies\SDL\src\test\SDL_test_assert.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nutzer\master\RamenGL\dependencies\SDL\src\test\SDL_test_common.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nutzer\master\RamenGL\dependencies\SDL\src\test\SDL_test_compare.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nutzer\master\RamenGL\dependencies\SDL\src\test\SDL_test_crc32.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nutzer\master\RamenGL\dependencies\SDL\src\test\SDL_test_font.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nutzer\master\RamenGL\dependencies\SDL\src\test\SDL_test_fuzzer.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nutzer\master\RamenGL\dependencies\SDL\src\test\SDL_test_harness.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nutzer\master\RamenGL\dependencies\SDL\src\test\SDL_test_log.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nutzer\master\RamenGL\dependencies\SDL\src\test\SDL_test_md5.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nutzer\master\RamenGL\dependencies\SDL\src\test\SDL_test_memory.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\Nutzer\master\RamenGL\dependencies\SDL\src\test\SDL_test_internal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Nutzer\master\RamenGL\dependencies\SDL\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{69D67698-CAFF-37A1-BB55-3540B1EE8015}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{6D3312E8-9382-354D-8DB3-E160D4A4F30F}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,10 @@
+^C:\USERS\NUTZER\MASTER\RAMENGL\TASKS_SRC\TASK03\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Nutzer/master/RamenGL -BC:/Users/Nutzer/master/RamenGL/build-codex --check-stamp-file C:/Users/Nutzer/master/RamenGL/build-codex/tasks_src/task03/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

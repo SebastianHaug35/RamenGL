@@ -35,6 +35,26 @@ class Camera
         return Normalize(Cross(m_Forward, m_Up));
     }
 
+    void Move(const Vec3f& offset)
+    {
+        m_Position = m_Position + offset;
+    }
+
+    void MoveForward(const float& distance)
+    {
+        Move(m_Forward * distance);
+    }
+
+    void MoveRight(const float& distance)
+    {
+        Move(GetRight() * distance);
+    }
+
+    void MoveUp(const float& distance)
+    {
+        Move(m_Up * distance);
+    }
+
     /* Orient camera so that it looks at target. */
     // void Orient(const Vec3f target)
     // {

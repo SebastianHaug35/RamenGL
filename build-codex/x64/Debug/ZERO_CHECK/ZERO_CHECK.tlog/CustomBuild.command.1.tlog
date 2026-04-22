@@ -1,0 +1,10 @@
+^C:\USERS\NUTZER\MASTER\RAMENGL\BUILD-CODEX\CMAKEFILES\651F11543B752EBFAFD99C5A0AFDF116\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Nutzer/master/RamenGL -BC:/Users/Nutzer/master/RamenGL/build-codex --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/Nutzer/master/RamenGL/build-codex/RamenGL.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

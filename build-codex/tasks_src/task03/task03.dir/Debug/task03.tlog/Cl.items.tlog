@@ -1,0 +1,16 @@
+C:\Users\Nutzer\master\RamenGL\dependencies\glad\src\glad.c;C:\Users\Nutzer\master\RamenGL\build-codex\tasks_src\task03\task03.dir\Debug\glad.obj
+C:\Users\Nutzer\master\RamenGL\dependencies\imgui\imgui.cpp;C:\Users\Nutzer\master\RamenGL\build-codex\tasks_src\task03\task03.dir\Debug\imgui.obj
+C:\Users\Nutzer\master\RamenGL\dependencies\imgui\imgui_impl_sdl3.cpp;C:\Users\Nutzer\master\RamenGL\build-codex\tasks_src\task03\task03.dir\Debug\imgui_impl_sdl3.obj
+C:\Users\Nutzer\master\RamenGL\dependencies\imgui\imgui_impl_opengl3.cpp;C:\Users\Nutzer\master\RamenGL\build-codex\tasks_src\task03\task03.dir\Debug\imgui_impl_opengl3.obj
+C:\Users\Nutzer\master\RamenGL\dependencies\imgui\imgui_draw.cpp;C:\Users\Nutzer\master\RamenGL\build-codex\tasks_src\task03\task03.dir\Debug\imgui_draw.obj
+C:\Users\Nutzer\master\RamenGL\dependencies\imgui\imgui_tables.cpp;C:\Users\Nutzer\master\RamenGL\build-codex\tasks_src\task03\task03.dir\Debug\imgui_tables.obj
+C:\Users\Nutzer\master\RamenGL\dependencies\imgui\imgui_demo.cpp;C:\Users\Nutzer\master\RamenGL\build-codex\tasks_src\task03\task03.dir\Debug\imgui_demo.obj
+C:\Users\Nutzer\master\RamenGL\dependencies\imgui\imgui_widgets.cpp;C:\Users\Nutzer\master\RamenGL\build-codex\tasks_src\task03\task03.dir\Debug\imgui_widgets.obj
+C:\Users\Nutzer\master\RamenGL\ramen\ramen.cpp;C:\Users\Nutzer\master\RamenGL\build-codex\tasks_src\task03\task03.dir\Debug\ramen.obj
+C:\Users\Nutzer\master\RamenGL\ramen\rgl_math.cpp;C:\Users\Nutzer\master\RamenGL\build-codex\tasks_src\task03\task03.dir\Debug\rgl_math.obj
+C:\Users\Nutzer\master\RamenGL\ramen\rgl_platform.cpp;C:\Users\Nutzer\master\RamenGL\build-codex\tasks_src\task03\task03.dir\Debug\rgl_platform.obj
+C:\Users\Nutzer\master\RamenGL\ramen\rgl_shader.cpp;C:\Users\Nutzer\master\RamenGL\build-codex\tasks_src\task03\task03.dir\Debug\rgl_shader.obj
+C:\Users\Nutzer\master\RamenGL\ramen\rgl_filesystem.cpp;C:\Users\Nutzer\master\RamenGL\build-codex\tasks_src\task03\task03.dir\Debug\rgl_filesystem.obj
+C:\Users\Nutzer\master\RamenGL\ramen\rgl_image.cpp;C:\Users\Nutzer\master\RamenGL\build-codex\tasks_src\task03\task03.dir\Debug\rgl_image.obj
+C:\Users\Nutzer\master\RamenGL\ramen\rgl_utils.cpp;C:\Users\Nutzer\master\RamenGL\build-codex\tasks_src\task03\task03.dir\Debug\rgl_utils.obj
+C:\Users\Nutzer\master\RamenGL\tasks_src\task03\task03.cpp;C:\Users\Nutzer\master\RamenGL\build-codex\tasks_src\task03\task03.dir\Debug\task03.obj
