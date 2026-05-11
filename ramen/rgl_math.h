@@ -36,6 +36,11 @@ struct Vec3f
         z = 0.0f;
     }
 
+    const float* Data() const
+    {
+        return (&x);
+    }
+
     float* Data()
     {
         return (&x);
@@ -134,13 +139,16 @@ struct Vec4f
         w = 0.0f;
     }
 
-    Vec4f(const Vec3f& v3)
-    {
-        x = v3.x;
-        y = v3.y;
-        z = v3.z;
-        w = 1.0f;
-    }
+    /* NOTE: This is convenient but also dangerous as
+     * someone might expect some different value for w.
+     */
+    // Vec4f(const Vec3f& v3)
+    // {
+    //     x = v3.x;
+    //     y = v3.y;
+    //     z = v3.z;
+    //     w = 0.0f;
+    // }
 
     Vec4f(const Vec3f& v3, const float& s)
     {
@@ -148,6 +156,16 @@ struct Vec4f
         y = v3.y;
         z = v3.z;
         w = s;
+    }
+
+    const float* Data() const
+    {
+        return (&x);
+    }
+
+    float* Data()
+    {
+        return (&x);
     }
 
     const float& operator[](const int index) const
@@ -355,7 +373,7 @@ struct Mat4f
                       Vec4f{ 0.0f, 0.0f, 0.0f, 1.0f } };
     }
 
-    const float* Data()
+    const float* Data() const
     {
         return (float*)(e[ 0 ]);
     }
@@ -388,6 +406,38 @@ struct Mat4f
 struct Quat
 {
     float x, y, z, w;
+
+    Quat()
+    {
+        x = 0.0f;
+        y = 0.0f;
+        z = 0.0f;
+        w = 0.0f;
+    }
+
+    Quat(const float& _x, const float& _y, const float& _z, const float& _w)
+    {
+        x = _x;
+        y = _y;
+        z = _z;
+        w = _w;
+    }
+
+    Quat(const Vec3f& v)
+    {
+        x = v.x;
+        y = v.y;
+        z = v.z;
+        w = 0.0f;
+    }
+
+    Quat(const Vec4f& v)
+    {
+        x = v.x;
+        y = v.y;
+        z = v.z;
+        w = v.w;
+    }
 
     const Quat operator*(const Quat& rhs) const
     {
@@ -453,6 +503,8 @@ Vec3f Normalize(const Vec3f& v);
 float Dot(const Vec3f& a, const Vec3f& b);
 Vec4f Normalize(const Vec4f& v);
 float Dot(const Vec4f& a, const Vec4f& b);
+/* Scalar * Vector */
+Vec3f operator*(const float& s, const Vec3f& v);
 
 /* Create Inverse of 4x4 Matrix.
  * Code from 'Foundations of Game Engine programming Vol.1'
@@ -478,6 +530,8 @@ Mat4f PerspectiveProjection(const float& fovy, const float& aspect, const float&
 Mat4f Translate(const Vec3f& v);
 Mat4f Rotate(const Vec3f& axis, const float& angleDgr);
 void  Rotate(Mat4f& M, const Vec3f& axis, const float& angleDgr);
+Mat4f Rotate(const Mat4f& M, const Vec3f& axis, const float& angleDgr);
+// void  Rotate(Mat4f& M, const Vec3f& anglesDgr); /* TODO: Implement. */
 Vec3f Rotate(const Quat& q, const Vec3f& v);
 
 Mat4f Scale(const Vec3f& v);

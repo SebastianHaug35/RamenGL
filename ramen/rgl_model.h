@@ -58,10 +58,24 @@ class Model
             {
                 tinyobj::index_t idx = m_Shapes[ i ].mesh.indices[ j ];
                 Vertex           v{};
+                /* UV */
+                if ( idx.texcoord_index >= 0 )
+                {
+                    v.uv.x = attrib.texcoords[ 2 * idx.texcoord_index ];
+                    v.uv.y = attrib.texcoords[ 2 * idx.texcoord_index + 1 ];
+                }
+                else
+                    v.uv = Vec3f{ 0.0f };
                 for ( int k = 0; k < 3; k++ )
                 {
+                    /* Position */
                     v.position[ k ] = attrib.vertices[ 3 * idx.vertex_index + k ];
-                    v.normal[ k ]   = attrib.normals[ 3 * idx.normal_index + k ];
+
+                    /* Normal */
+                    if ( idx.normal_index >= 0 )
+                        v.normal[ k ] = attrib.normals[ 3 * idx.normal_index + k ];
+                    else
+                        v.normal[ k ] = 0.0f;
                 }
                 m_Vertices.push_back(v);
             }

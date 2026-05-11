@@ -158,17 +158,17 @@ Mat4f LookAt(const Vec3f& position, const Vec3f& target, const Vec3f& up)
     Vec3f u = Cross(r, f);
     Mat4f R = Mat4f::Identity();
     R(0, 0) = r.x;
-    R(1, 0) = r.y;
-    R(2, 0) = r.z;
-    R(0, 1) = u.x;
+    R(0, 1) = r.y;
+    R(0, 2) = r.z;
+    R(1, 0) = u.x;
     R(1, 1) = u.y;
-    R(2, 1) = u.z;
+    R(1, 2) = u.z;
     /* Note the flipped values of the forward vector.
      * This does *NOT* mean, though, that this matrix
      * is becoming left-handed.
      */
-    R(0, 2) = -f.x;
-    R(1, 2) = -f.y;
+    R(2, 0) = -f.x;
+    R(2, 1) = -f.y;
     R(2, 2) = -f.z;
 
     Mat4f T = Translate(t);
@@ -241,6 +241,27 @@ void Rotate(Mat4f& M, const Vec3f& axis, const float& angleDgr)
     M             = R * M;
 }
 
+Mat4f Rotate(const Mat4f& M, const Vec3f& axis, const float& angleDgr)
+{
+    const Mat4f R = Rotate(axis, angleDgr);
+    return R * M;
+}
+
+/* TODO: Rotate matrix around all three angles. */
+// void Rotate(Mat4f& M, const Vec3f& anglesDgr)
+// {
+//     const Quat qX   = AngleAxis(RAMEN_WORLD_RIGHT, anglesDgr.x);
+//     const Quat qY   = AngleAxis(RAMEN_WORLD_UP, anglesDgr.y);
+//     const Quat qZ   = AngleAxis(RAMEN_WORLD_FORWARD, anglesDgr.z);
+//     const Quat qRot = qY * qX * qZ;
+//     M               = ToMat4f(qRot) * M;
+// }
+
+// void Rotate(Mat4f& M, const Mat4f& frame, const Vec3f& anglesDgr)
+// {
+//
+// }
+
 /* Assumes q is noramlized. */
 Vec3f Rotate(const Quat& q, const Vec3f& v)
 {
@@ -251,4 +272,10 @@ Vec3f Rotate(const Quat& q, const Vec3f& v)
     /* pure quaternion rotated. Its components yield rotated v */
     const Quat pp = q * p * cq;
     return Vec3f{ pp.x, pp.y, pp.z };
+}
+
+/* Scalar * Vector */
+Vec3f operator*(const float& s, const Vec3f& v)
+{
+    return v * s;
 }

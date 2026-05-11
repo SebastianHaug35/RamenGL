@@ -24,11 +24,4 @@ fi
 unzip -q physfs.zip -d dependencies
 mv dependencies/physfs* dependencies/physfs
 
-
-# Download model files
-curl -L -o models.zip https://syncandshare.lrz.de/dl/fiXxtfc7YgH8Dg6u2paF4G/.dir
-unzip -q -o models.zip -d assets/models
-
-# Download texture files
-curl -L -o textures.zip https://syncandshare.lrz.de/dl/fiEhKjgAgYCKjUSYTxyyy6/.dir
-unzip -q -o textures.zip -d assets/textures
+./get_assets.sh

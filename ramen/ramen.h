@@ -1,11 +1,11 @@
 #ifndef RAMEN_H
 #define RAMEN_H
 
+#include "SDL3/SDL_keyboard.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#include <string>
+#include <string.h>
 
 #include <glad/glad.h>
 
@@ -78,7 +78,7 @@ class Ramen
         /* Init Dear ImGUI */
         /* ImGUI context */
         IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
+        m_ImGuiCtx  = ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO();
         (void)io;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
@@ -99,6 +99,10 @@ class Ramen
         /* Setup Platform/Renderer backends */
         ImGui_ImplSDL3_InitForOpenGL(m_pWindow, m_glContext);
         ImGui_ImplOpenGL3_Init("#version 460");
+
+        /* Init input state */
+        memset(m_Scancodes, 0, SDL_SCANCODE_COUNT * sizeof(bool));
+        memset(m_PrevScancodes, 0, SDL_SCANCODE_COUNT * sizeof(bool));
     }
 
     void Shutdown()
@@ -123,21 +127,50 @@ class Ramen
         return m_glContext;
     }
 
-    void ProcessInputEvent(const SDL_Event e) const
+    void EndFrame()
+    {
+        memcpy(m_PrevScancodes, m_Scancodes, SDL_SCANCODE_COUNT * sizeof(bool));
+        // memset(m_Scancodes, 0, SDL_SCANCODE_COUNT * sizeof(bool));
+    }
+
+    void ProcessInputEvent(const SDL_Event& e)
     {
         if ( e.type == SDL_EVENT_KEY_DOWN )
         {
-            printf("key down event.\n");
+            m_Scancodes[ e.key.scancode ] = true;
         }
-        else if ( e.type == SDL_EVENT_KEY_UP )
+        if ( e.type == SDL_EVENT_KEY_UP )
         {
-            printf("key up event.\n");
+            m_Scancodes[ e.key.scancode ] = false;
         }
+    }
+
+    bool KeyWentDown(const SDL_Keycode& keycode)
+    {
+        SDL_Scancode sc = SDL_GetScancodeFromKey(keycode, nullptr);
+        return !(m_PrevScancodes[ sc ]) && (m_Scancodes[ sc ]);
+    }
+
+    bool KeyWentUp(const SDL_Keycode& keycode)
+    {
+        SDL_Scancode sc = SDL_GetScancodeFromKey(keycode, nullptr);
+        return (m_PrevScancodes[ sc ]) && !(m_Scancodes[ sc ]);
+    }
+
+    bool KeyPressed(const SDL_Keycode& keycode)
+    {
+        SDL_Scancode sc = SDL_GetScancodeFromKey(keycode, nullptr);
+        return m_PrevScancodes[ sc ] && m_Scancodes[ sc ];
     }
 
   private:
     SDL_Window*   m_pWindow;
     SDL_GLContext m_glContext;
+    SDL_Keycode   m_KeyboardState;
+    SDL_Keycode   m_PrevKeyboardState;
+    bool          m_Scancodes[ SDL_SCANCODE_COUNT ];
+    bool          m_PrevScancodes[ SDL_SCANCODE_COUNT ];
+    ImGuiContext* m_ImGuiCtx;
     Ramen() = default;
 };
 

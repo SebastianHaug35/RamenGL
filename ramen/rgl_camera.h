@@ -20,6 +20,11 @@ class Camera
         return m_Position;
     }
 
+    Vec3f& Position()
+    {
+        return m_Position;
+    }
+
     const Vec3f& GetForward() const
     {
         return m_Forward;
@@ -56,23 +61,26 @@ class Camera
     }
 
     /* Orient camera so that it looks at target. */
-    // void Orient(const Vec3f target)
-    // {
-    //     Vec3f newForward = Normalize(target - m_Position);
-    //     Vec3f newSide    = Normalize(Cross(newForward, Vec3f{ 0.0f, 1.0f, 0.0f }));
-    //     Vec3f newUp      = Normalize(Cross(newSide, newForward));
-    //     m_qOrientation   = AngleAxis(newForward, 0.0f);
-    // }
+    void Orient(const Vec3f target)
+    {
+        m_Forward = Normalize(target - m_Position);
+        m_Right   = Cross(m_Forward, RAMEN_WORLD_UP);
+        m_Up      = Cross(m_Right, m_Forward);
+    }
 
     /* NOTE: Angle is negated as the camera's forward is facing
      * to -z and reverses the expected rotation direction (CCW)
      * in worldspace. So, in order to transform the camera
      * like other objects in the world (via a model matrix)
      * this adjustment is being made to the angle.
+     *
+     * UPDATE (4/27/2026): This is no longer the case since
+     * there was a bug in the lookAt() function where
+     * rows and columns were swapped during construction.
      */
     void RotateAroundWorldUp(const float& angle)
     {
-        Quat q         = AngleAxis(RAMEN_WORLD_UP, -angle);
+        Quat q         = AngleAxis(RAMEN_WORLD_UP, angle);
         m_qOrientation = q * m_qOrientation;
         m_qOrientation.Normalize();
         m_Forward = Rotate(m_qOrientation, RAMEN_CAMERA_FORWARD);
@@ -82,7 +90,7 @@ class Camera
 
     void RotateAroundUp(const float& angle)
     {
-        Quat q         = AngleAxis(m_Up, -angle);
+        Quat q         = AngleAxis(m_Up, angle);
         m_qOrientation = q * m_qOrientation;
         m_qOrientation.Normalize();
         m_Forward = Rotate(m_qOrientation, RAMEN_CAMERA_FORWARD);
@@ -91,7 +99,7 @@ class Camera
 
     void RotateAroundSide(const float& angle)
     {
-        Quat q         = AngleAxis(GetRight(), -angle);
+        Quat q         = AngleAxis(GetRight(), angle);
         m_qOrientation = q * m_qOrientation;
         m_qOrientation.Normalize();
         m_Forward = Rotate(m_qOrientation, RAMEN_CAMERA_FORWARD);
@@ -128,6 +136,16 @@ class Camera
     void Yaw(const float& angle)
     {
         RotateAroundUp(angle);
+    }
+
+    void DollyForward(const float& amount)
+    {
+        m_Position = m_Position + (amount * m_Forward);
+    }
+
+    void DollySide(const float& amount)
+    {
+        m_Position = m_Position + (amount * m_Right);
     }
 
   private:
