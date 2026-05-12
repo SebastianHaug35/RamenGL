@@ -1,0 +1,11 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Users/Nutzer/master/RamenGL/build-codex/cmake_install.cmake",
+		"C:/Users/Nutzer/master/RamenGL/build-codex/dependencies/SDL/cmake_install.cmake",
+		"C:/Users/Nutzer/master/RamenGL/build-codex/dependencies/physfs/cmake_install.cmake",
+		"C:/Users/Nutzer/master/RamenGL/build-codex/tasks_src/cmake_install.cmake",
+		"C:/Users/Nutzer/master/RamenGL/build-codex/tasks_src/task03/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

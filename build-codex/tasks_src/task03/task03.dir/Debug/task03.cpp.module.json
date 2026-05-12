@@ -1,0 +1,14 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": "task03.dir\\Debug\\task03.obj",
+            "outputs": [
+                "C:\\Users\\Nutzer\\master\\RamenGL\\build-codex\\tasks_src\\task03\\task03.dir\\Debug\\vc143.pdb",
+                "task03.dir\\Debug\\"
+            ],
+            "requires": []
+        }
+    ]
+}
