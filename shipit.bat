@@ -34,7 +34,7 @@ if not exist release_build (
 echo CMake configure...
 cmake -DCMAKE_BUILD_TYPE=Release -DRAMEN_BUILD_PROGRAM_NAME=%PROGRAM_NAME% -B release_build -S .
 echo CMake build...
-cmake --build release_build --config Release -j %NUMBER_OF_PROCESSORS%
+cmake --build release_build --target %PROGRAM_NAME% --config Release -j %NUMBER_OF_PROCESSORS%
 echo done.
 
 echo Create ZIP
@@ -44,7 +44,9 @@ if not exist release_build\%PROGRAM_NAME% (
 xcopy release_build\Release\%PROGRAM_NAME%.exe release_build\%PROGRAM_NAME%\ /Y
 xcopy release_build\Release\SDL3.dll           release_build\%PROGRAM_NAME%\ /Y
 xcopy release_build\Release\physfs.dll         release_build\%PROGRAM_NAME%\ /Y
-xcopy release_build\Release\tinyobjloader.dll  release_build\%PROGRAM_NAME%\ /Y
+if exist release_build\Release\tinyobjloader.dll (
+	xcopy release_build\Release\tinyobjloader.dll  release_build\%PROGRAM_NAME%\ /Y
+)
 robocopy assets                                release_build/%PROGRAM_NAME%/assets/ /E
 
 powershell -Command Compress-Archive -Force -Path release_build/%PROGRAM_NAME%/ -DestinationPath release_build/%PROGRAM_NAME%-Win-x64.zip

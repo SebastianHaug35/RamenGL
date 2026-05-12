@@ -2,7 +2,12 @@
 
 out vec4 outColor;
 
+layout(location = 0) in vec3 in_Direction;
+
+layout(binding = 0) uniform samplerCube u_Cubemap;
+
 void main()
 {
-    outColor = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    vec3 sampleDir = normalize(in_Direction);
+    outColor = texture(u_Cubemap, sampleDir);
 }

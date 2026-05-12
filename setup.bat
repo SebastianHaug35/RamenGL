@@ -30,6 +30,8 @@ curl -L -o physfs.zip https://github.com/icculus/physfs/archive/refs/tags/releas
 powershell -Command "Expand-Archive -Force physfs.zip -DestinationPath dependencies/"
 REM rename unzipped physfs-* folder to just physfs
 for /d %%f in (dependencies\physfs-*) do ren "%%f" physfs
+REM PhysFS 3.2.0 still declares an old CMake minimum that current CMake rejects.
+powershell -Command "(Get-Content dependencies/physfs/CMakeLists.txt) -replace 'cmake_minimum_required\(VERSION 3\.0\)', 'cmake_minimum_required(VERSION 3.10)' | Set-Content dependencies/physfs/CMakeLists.txt"
 
 
 REM #############

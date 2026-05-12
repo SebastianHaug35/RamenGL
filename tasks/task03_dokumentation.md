@@ -306,13 +306,124 @@ Seil und Last bleiben relativ zum Ausleger fest. Das reduziert die Komplexitaet,
 erfuellt aber weiterhin die geforderte Animation, weil der Ausleger mit Seil und
 Last rotiert.
 
-## Noch offen
+## 3.8 Ship It
 
-- Vollstaendigen Build erneut pruefen. Der alte `build/`-Ordner regeneriert
-  aktuell nicht sauber, und der frische `build-codex/`-Ordner braucht sehr lange
-  beim Kompilieren der SDL-Abhaengigkeiten.
+Fuer Aufgabe 3.8 wurde das Windows-Script `shipit.bat` mit Aufgabe 3 getestet:
+
+```bat
+shipit.bat tasks_src\task03\
+```
+
+Das Script erzeugt einen Release-Build und packt danach ein ZIP-Archiv unter:
+
+```text
+release_build\task03-Win-x64.zip
+```
+
+Der Inhalt des ZIP-Archivs wurde kontrolliert. Enthalten sind:
+
+- `task03/task03.exe`
+- `task03/SDL3.dll`
+- `task03/physfs.dll`
+- `task03/assets/`
+
+Damit ist die Aufgabe als abgabefaehiges Paket exportierbar.
+
+### Anpassung am Ship-It-Script
+
+Beim Test fiel auf, dass `shipit.bat` unter Visual Studio nicht zuverlaessig das
+gewuenschte Zielprogramm gebaut hat. Deshalb wurde der Build-Aufruf auf das
+konkrete Target eingeschraenkt:
+
+```bat
+cmake --build release_build --target %PROGRAM_NAME% --config Release -j %NUMBER_OF_PROCESSORS%
+```
+
+Ausserdem wird `tinyobjloader.dll` nur noch kopiert, wenn die Datei im
+Release-Ordner existiert. Aufgabe 3 benutzt diese DLL nicht direkt, deshalb ist
+sie fuer das `task03`-Paket nicht notwendig.
 
 ## Fehler und Korrekturen
+
+### Frischer Clone war noch nicht buildbar
+
+Symptom:
+
+Nach dem neuen Clone fehlten die externen Abhaengigkeiten:
+
+```text
+dependencies/SDL
+dependencies/physfs
+```
+
+Dadurch konnte CMake `add_subdirectory(./dependencies/SDL)` und
+`add_subdirectory(./dependencies/physfs/)` nicht ausfuehren.
+
+Korrektur:
+
+`setup.bat` wurde ausgefuehrt. Dadurch wurden SDL, PhysFS, Modelle und Texturen
+nachgeladen.
+
+### PhysFS hatte ein zu altes CMake-Minimum
+
+Symptom:
+
+Nach dem Nachladen der Abhaengigkeiten brach die CMake-Konfiguration bei PhysFS
+ab:
+
+```text
+Compatibility with CMake < 3.5 has been removed from CMake.
+```
+
+Ursache:
+
+PhysFS 3.2.0 enthaelt in `dependencies/physfs/CMakeLists.txt` noch:
+
+```cmake
+cmake_minimum_required(VERSION 3.0)
+```
+
+Diese Angabe wird von der verwendeten CMake-Version nicht mehr akzeptiert.
+
+Korrektur:
+
+Die lokale PhysFS-Datei wurde auf `cmake_minimum_required(VERSION 3.10)`
+angepasst. Zusaetzlich wurde `setup.bat` erweitert, damit diese Korrektur nach
+dem Herunterladen von PhysFS automatisch erneut angewendet wird.
+
+### `shipit.bat` erzeugte zuerst kein vollstaendiges Paket
+
+Symptom:
+
+`shipit.bat tasks_src\task03\` lief formal durch, aber beim Kopieren wurden
+zunaechst keine Programmdateien gefunden:
+
+```text
+Datei task03.exe nicht gefunden
+Datei SDL3.dll nicht gefunden
+Datei physfs.dll nicht gefunden
+Datei tinyobjloader.dll nicht gefunden
+```
+
+Ursache:
+
+Der Script-Aufruf `cmake --build release_build --config Release` baute das
+konkrete Ziel `task03` in dieser Umgebung nicht sichtbar mit. Danach erwartete
+das Script aber bereits die fertigen Dateien in `release_build\Release\`.
+Zusaetzlich wurde `tinyobjloader.dll` immer kopiert, obwohl Aufgabe 3 diese DLL
+nicht benoetigt.
+
+Korrektur:
+
+Der Build-Aufruf wurde auf `--target %PROGRAM_NAME%` erweitert. Dadurch wird
+fuer `tasks_src\task03\` konkret das Target `task03` gebaut. Das Kopieren von
+`tinyobjloader.dll` ist nun optional und wird nur ausgefuehrt, wenn die Datei
+wirklich existiert.
+
+Ergebnis:
+
+Das ZIP `release_build\task03-Win-x64.zip` enthaelt danach `task03.exe`,
+`SDL3.dll`, `physfs.dll` und den `assets`-Ordner.
 
 ### Kugel wirkte falsch beleuchtet
 
@@ -567,3 +678,29 @@ Beim Kran ist der Ausleger ein Kind der Kran-Wurzel. Der Hakenpunkt ist ein Kind
 des Auslegers, und Seil und Last sind Kinder dieses Hakenpunkts. Deshalb reicht
 es, den Ausleger am oberen Turm zu rotieren, und Seil und Last rotieren
 automatisch mit.
+
+### Release-Build
+
+Ein Release-Build ist eine kompilierte Programmversion fuer die Abgabe oder
+Weitergabe. Im Gegensatz zum Debug-Build enthaelt er normalerweise weniger
+Debug-Informationen und ist auf Ausfuehrung statt Fehlersuche ausgelegt.
+
+In Aufgabe 3.8 wird der Release-Build durch `shipit.bat` erzeugt.
+
+### Target
+
+Ein Target ist in CMake ein konkretes Bauziel, zum Beispiel `task03`. Wenn man
+ein Target direkt baut, wird genau dieses Programm mit seinen notwendigen
+Abhaengigkeiten kompiliert.
+
+### DLL
+
+Eine DLL ist eine dynamische Bibliothek unter Windows. Programme koennen Code
+aus DLL-Dateien zur Laufzeit verwenden. Fuer `task03` muessen deshalb neben der
+EXE auch `SDL3.dll` und `physfs.dll` im Abgabeordner liegen.
+
+### ZIP-Archiv
+
+Ein ZIP-Archiv ist eine gepackte Datei, die mehrere Dateien und Ordner
+enthaelt. In Aufgabe 3.8 enthaelt das ZIP die EXE, die DLLs und den
+`assets`-Ordner.
