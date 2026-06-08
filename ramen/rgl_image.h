@@ -5,6 +5,7 @@ class Image
 {
   public:
     Image();
+    ~Image();
     bool           Load(const char* file);
     int            GetWidth();
     int            GetHeight();

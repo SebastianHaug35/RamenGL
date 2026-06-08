@@ -44,7 +44,5 @@ echo Downloading and inflating model files...
 curl -L -o models.zip https://syncandshare.lrz.de/dl/fiXxtfc7YgH8Dg6u2paF4G/.dir
 powershell -Command "Expand-Archive -Force models.zip -DestinationPath assets/models"
 
-echo Downloading and inflating texture files...
 curl -L -o textures.zip https://syncandshare.lrz.de/dl/fiEhKjgAgYCKjUSYTxyyy6/.dir
 powershell -Command "Expand-Archive -Force textures.zip -DestinationPath assets/textures"
-

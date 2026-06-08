@@ -14,6 +14,14 @@ Image::Image()
     m_Data   = nullptr;
 }
 
+Image::~Image()
+{
+    if ( m_Data )
+    {
+        free(m_Data);
+    }
+}
+
 bool Image::Load(const char* file)
 {
     int x, y, n;

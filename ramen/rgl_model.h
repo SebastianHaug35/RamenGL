@@ -17,6 +17,8 @@ struct Vertex
     Vec3f normal;
     Vec3f color;
     Vec3f uv;
+    Vec3f tangent;
+    Vec3f bitangent;
 };
 
 class Model
@@ -96,6 +98,53 @@ class Model
         }
 
         printf("m_Vertices.size(): %lu\n", m_Vertices.size());
+
+        /* Compute Tangent / Bitangent */
+#if 1
+        for ( int i = 0; i < m_Vertices.size(); i += 3 )
+        {
+            Vertex&      v0 = m_Vertices[ i + 0 ];
+            Vertex&      v1 = m_Vertices[ i + 1 ];
+            Vertex&      v2 = m_Vertices[ i + 2 ];
+            const Vec3f& p0 = v0.position;
+            const Vec3f& p1 = v1.position;
+            const Vec3f& p2 = v2.position;
+            const Vec3f  e1 = p1 - p0;
+            const Vec3f  e2 = p2 - p0;
+            const Vec3f& t0 = v0.uv;
+            const Vec3f& t1 = v1.uv;
+            const Vec3f& t2 = v2.uv;
+
+            const float x1 = t1.x - t0.x;
+            const float y1 = t1.y - t0.y;
+            const float x2 = t2.x - t0.x;
+            const float y2 = t2.y - t0.y;
+
+            const Mat2f uvFrame    = Mat2f{ x1, y1, x2, y2 };
+            const float uvFrameDet = uvFrame.Det();
+
+            Vec3f tangent   = Vec3f{ e1.x * y2 + e2.x * -y1, e1.y * y2 + e2.y * -y1, e1.z * y2 + e2.z * -y1 };
+            Vec3f bitangent = Vec3f{ e1.x * -x2 + e2.x * x1, e1.y * -x2 + e2.y * x1, e1.z * -x2 + e2.z * x1 };
+            tangent *= uvFrameDet;
+            bitangent *= uvFrameDet;
+
+            v0.tangent   = tangent;
+            v1.tangent   = tangent;
+            v2.tangent   = tangent;
+            v0.bitangent = bitangent;
+            v1.bitangent = bitangent;
+            v2.bitangent = bitangent;
+        }
+
+        /* Normalize tangents / bitangents */
+        //  TODO: Orthonormalize.
+        for ( int i = 0; i < m_Vertices.size(); i++ )
+        {
+            Vertex& v = m_Vertices[ i ];
+            v.tangent.Normalize();
+            v.bitangent.Normalize();
+        }
+#endif
 
         modelFile.Destroy();
 

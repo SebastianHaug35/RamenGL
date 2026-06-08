@@ -7,7 +7,102 @@
 
 #include "rgl_defines.h"
 
+struct Vec3f;
 struct Vec4f;
+
+float Length(const Vec3f& v);
+
+struct Vec2f
+{
+    float x;
+    float y;
+
+    Vec2f(float _x, float _y)
+    {
+        x = _x;
+        y = _y;
+    }
+
+    Vec2f(float s)
+    {
+        x = s;
+        y = s;
+    }
+
+    Vec2f()
+    {
+        x = 0.0f;
+        y = 0.0f;
+    }
+
+    const float* Data() const
+    {
+        return (&x);
+    }
+
+    float* Data()
+    {
+        return (&x);
+    }
+
+    const float operator[](const int index) const
+    {
+        assert(index < 2);
+        return (&x)[ index ];
+    }
+
+    float& operator[](const int index)
+    {
+        assert(index < 2);
+        return (&x)[ index ];
+    }
+
+    Vec2f operator-(const Vec2f& right) const
+    {
+        return Vec2f{ x - right.x, y - right.y };
+    }
+
+    const Vec2f operator-() const
+    {
+        return Vec2f{ -x, -y };
+    }
+
+    Vec2f operator+(const Vec2f& right) const
+    {
+        return Vec2f{ x + right.x, y + right.y };
+    }
+
+    Vec2f operator/(float s) const
+    {
+        return Vec2f{ x / s, y / s };
+    }
+
+    Vec2f operator*(const Vec2f& right) const
+    {
+        return Vec2f{ x * right.x, y * right.y };
+    }
+
+    /* Vector * Scalar */
+    Vec2f operator*(const float& s) const
+    {
+        return Vec2f{ s * x, s * y };
+    }
+
+    Vec2f& operator*=(const float& s)
+    {
+        x *= s;
+        y *= s;
+
+        return *this;
+    }
+
+    const char* ToString() const
+    {
+        static char buffer[ 128 ];
+        sprintf(buffer, "[ %.2f, %.2f ]", x, y);
+        return buffer;
+    }
+};
 
 struct Vec3f
 {
@@ -98,6 +193,15 @@ struct Vec3f
         z *= s;
 
         return *this;
+    }
+
+    void Normalize()
+    {
+        float len = Length(*this);
+        if ( len > RAMEN_EPSILON )
+        {
+            *this = *this / len;
+        }
     }
 
     const char* ToString() const
@@ -215,6 +319,154 @@ struct Vec4f
     {
         static char buffer[ 128 ];
         sprintf(buffer, "[ %.2f, %.2f, %.2f, %.2f ]", x, y, z, w);
+        return buffer;
+    }
+};
+
+/* 2xw Matrix with floats.
+ * Stores elements in column major order.
+ * Constructors also expect data in columns!
+ */
+struct Mat2f
+{
+    float e[ 2 ][ 2 ];
+
+    Mat2f() = default;
+
+    Mat2f(
+        /* 1st col */
+        const float& d00,
+        const float& d01,
+        /* 2nd col */
+        const float& d10,
+        const float& d11)
+    {
+        e[ 0 ][ 0 ] = d00;
+        e[ 0 ][ 1 ] = d01;
+
+        e[ 1 ][ 0 ] = d10;
+        e[ 1 ][ 1 ] = d11;
+    }
+
+    Mat2f(const Vec2f& col1, const Vec2f& col2)
+    {
+        e[ 0 ][ 0 ] = col1.x;
+        e[ 0 ][ 1 ] = col1.y;
+        e[ 1 ][ 0 ] = col2.x;
+        e[ 1 ][ 1 ] = col2.y;
+    }
+
+    /* Follows mathematical notation:
+     * i = row, j = column.
+     */
+    const float& operator()(int i, int j) const
+    {
+        return e[ j ][ i ];
+    }
+
+    float& operator()(int i, int j)
+    {
+        return e[ j ][ i ];
+    }
+
+    const Vec2f& operator[](int col) const
+    {
+        return reinterpret_cast<const Vec2f&>(e[ col ]);
+    }
+
+    Vec2f& operator[](int col)
+    {
+        return reinterpret_cast<Vec2f&>(e[ col ]);
+    }
+
+    void Transpose()
+    {
+        Mat2f result{};
+        for ( int i = 0; i < 4; i++ )
+        {
+            const Vec2f& col = this->operator[](i);
+            for ( int j = 0; j < 2; j++ )
+            {
+                result[ j ][ i ] = col[ j ];
+            }
+        }
+        *this = result;
+    }
+
+    const Mat2f operator*(const Mat2f& rhs) const
+    {
+        Mat2f result{};
+        for ( int row = 0; row < 2; row++ )
+        {
+            for ( int col = 0; col < 2; col++ )
+            {
+                float sum = 0.0f;
+                for ( int k = 0; k < 2; k++ )
+                {
+                    sum += (*this)(row, k) * rhs(k, col);
+                }
+
+                result(row, col) = sum;
+            }
+        }
+
+        return result;
+    }
+
+    Vec2f operator*(const Vec2f& v)
+    {
+        Vec2f result{};
+        for ( int row = 0; row < 2; row++ )
+        {
+            float value = 0.0f;
+            for ( int k = 0; k < 2; k++ )
+            {
+                value += (*this)(row, k) * v[ k ];
+            }
+            result[ row ] = value;
+        }
+
+        return result;
+    }
+
+    Mat2f operator*(const float& s) const
+    {
+        return Mat2f{ s * e[ 0 ][ 0 ], s * e[ 0 ][ 1 ], s * e[ 1 ][ 0 ], s * e[ 1 ][ 1 ] };
+    }
+
+    Mat2f operator/(const float& s)
+    {
+        return Mat2f{ e[ 0 ][ 0 ] / s, e[ 0 ][ 1 ] / s, e[ 1 ][ 0 ] / s, e[ 1 ][ 1 ] / s };
+    }
+
+    static Mat2f Identity()
+    {
+        return Mat2f{ Vec2f{ 1.0f, 0.0f }, Vec2f{ 0.0f, 1.0f } };
+    }
+
+    const float* Data() const
+    {
+        return (float*)(e[ 0 ]);
+    }
+
+    const float Det() const
+    {
+        /*
+         * | a c |
+         * | b d |
+         */
+        const float& a = e[ 0 ][ 0 ];
+        const float& b = e[ 0 ][ 1 ];
+        const float& c = e[ 1 ][ 0 ];
+        const float& d = e[ 1 ][ 1 ];
+
+        return 1.0f / ((a * d) - (b * c));
+    }
+
+    const char* ToString() const
+    {
+        static char buffer[ 256 ];
+        sprintf(buffer, "%.2f, %.2f\n%.2f, %.2f", e[ 0 ][ 0 ], e[ 1 ][ 0 ], e[ 0 ][ 1 ], e[ 1 ][ 1 ]);
         return buffer;
     }
 };
@@ -496,8 +748,10 @@ struct Quat
     }
 };
 
+Vec2f operator*(const float& s, const Vec2f& v);
+Mat2f operator*(const float& s, const Mat2f& m);
+Mat2f Inverse(const Mat2f& m);
 Vec3f Cross(const Vec3f& a, const Vec3f& b);
-float Length(const Vec3f& v);
 float Length(const Vec4f& v);
 Vec3f Normalize(const Vec3f& v);
 float Dot(const Vec3f& a, const Vec3f& b);

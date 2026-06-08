@@ -8,6 +8,21 @@ Vec3f::Vec3f(const Vec4f& v4)
     z = v4.z;
 }
 
+Mat2f operator*(const float& s, const Mat2f& m)
+{
+    return m * s;
+}
+
+Mat2f Inverse(const Mat2f& m)
+{
+    const float& a   = m[ 0 ][ 0 ];
+    const float& b   = m[ 0 ][ 1 ];
+    const float& c   = m[ 1 ][ 0 ];
+    const float& d   = m[ 1 ][ 1 ];
+    const float  det = m.Det();
+
+    return det * Mat2f{ d, -c, -b, a };
+}
 Vec3f Cross(const Vec3f& a, const Vec3f& b)
 {
     return Vec3f{ a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x };
@@ -274,7 +289,13 @@ Vec3f Rotate(const Quat& q, const Vec3f& v)
     return Vec3f{ pp.x, pp.y, pp.z };
 }
 
-/* Scalar * Vector */
+/* Vec2 Scalar * Vector */
+Vec2f operator*(const float& s, const Vec2f& v)
+{
+    return v * s;
+}
+
+/* Vec3 Scalar * Vector */
 Vec3f operator*(const float& s, const Vec3f& v)
 {
     return v * s;
