@@ -362,6 +362,21 @@ RamenGL_IS_TOP_LEVEL:STATIC=ON
 //Value Computed by CMake
 RamenGL_SOURCE_DIR:STATIC=C:/Users/Nutzer/master/RamenGL
 
+//Enable AddressSanitizer for sanitized targets.
+SANITIZE_ADDRESS:BOOL=OFF
+
+//Try to link static against sanitizers.
+SANITIZE_LINK_STATIC:BOOL=OFF
+
+//Enable MemorySanitizer for sanitized targets.
+SANITIZE_MEMORY:BOOL=OFF
+
+//Enable ThreadSanitizer for sanitized targets.
+SANITIZE_THREAD:BOOL=OFF
+
+//Enable UndefinedBehaviorSanitizer for sanitized targets.
+SANITIZE_UNDEFINED:BOOL=OFF
+
 //Value Computed by CMake
 SDL3_BINARY_DIR:STATIC=C:/Users/Nutzer/master/RamenGL/build-codex/dependencies/SDL
 
@@ -648,14 +663,41 @@ SDL_X11:BOOL=OFF
 //Use Xinput for Windows
 SDL_XINPUT:BOOL=ON
 
+//Build OBJ Sticher Application
+TINYOBJLOADER_BUILD_OBJ_STICHER:BOOL=OFF
+
+//Build Example Loader Application
+TINYOBJLOADER_BUILD_TEST_LOADER:BOOL=OFF
+
+//Prefer locally-installed Python interpreter than system or conda/brew
+// installed Python. Please specify your Python interpreter   with
+// `Python3_EXECUTABLE` cmake option if you enable this option.
+TINYOBJLOADER_PREFER_LOCAL_PYTHON_INSTALLATION:BOOL=OFF
+
+//Build library with double precision instead of single (float)
+TINYOBJLOADER_USE_DOUBLE:BOOL=OFF
+
+//Build Python module(for developer). Use pyproject.toml/setup.py
+// to build Python module for end-users
+TINYOBJLOADER_WITH_PYTHON:BOOL=OFF
+
 //Value Computed by CMake
-Tasks_BINARY_DIR:STATIC=C:/Users/Nutzer/master/RamenGL/build-codex/tasks_src/task03
+Tasks_BINARY_DIR:STATIC=C:/Users/Nutzer/master/RamenGL/build-codex/tasks_src/task06
 
 //Value Computed by CMake
 Tasks_IS_TOP_LEVEL:STATIC=OFF
 
 //Value Computed by CMake
-Tasks_SOURCE_DIR:STATIC=C:/Users/Nutzer/master/RamenGL/tasks_src/task03
+Tasks_SOURCE_DIR:STATIC=C:/Users/Nutzer/master/RamenGL/tasks_src/task06
+
+//Value Computed by CMake
+tinyobjloader_BINARY_DIR:STATIC=C:/Users/Nutzer/master/RamenGL/build-codex/dependencies/tinyobjloader
+
+//Value Computed by CMake
+tinyobjloader_IS_TOP_LEVEL:STATIC=OFF
+
+//Value Computed by CMake
+tinyobjloader_SOURCE_DIR:STATIC=C:/Users/Nutzer/master/RamenGL/dependencies/tinyobjloader
 
 
 ########################
@@ -778,7 +820,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_MT
 CMAKE_MT-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=5
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=10
 //Platform information initialized
 CMAKE_PLATFORM_INFO_INITIALIZED:INTERNAL=1
 //noop for ranlib

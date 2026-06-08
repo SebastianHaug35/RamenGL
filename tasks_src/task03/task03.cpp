@@ -41,6 +41,7 @@ static void AddTriangle(std::vector<Vertex>& vertices,
     vertices.push_back(Vertex{ .position = c, .normal = normal, .color = color });
 }
 
+/* Task 3.2 TODO: Build primitives with sensible normals and configurable color. */
 /* Helper for smooth shading.
  * On a sphere, the direction from the center to the surface point is already
  * the outward normal, so Normalize(position) gives the correct vertex normal.
@@ -51,6 +52,12 @@ static void AddSmoothTriangle(std::vector<Vertex>& vertices,
                               const Vec3f&         c,
                               const Vec3f&         color)
 {
+    /* Warum so?
+     * Fuer die Kugel zeigt der Vektor vom Mittelpunkt zum Vertex bereits in
+     * Normalenrichtung. Durch Normalize(a/b/c) bekommt jeder Vertex eine eigene
+     * Einheitsnormale -> die Beleuchtung wird zwischen den Vertices weich
+     * interpoliert (smooth shading) statt flaechig pro Dreieck.
+     */
     vertices.push_back(Vertex{ .position = a, .normal = Normalize(a), .color = color });
     vertices.push_back(Vertex{ .position = b, .normal = Normalize(b), .color = color });
     vertices.push_back(Vertex{ .position = c, .normal = Normalize(c), .color = color });
@@ -77,21 +84,38 @@ static std::vector<Vertex> CreateCuboid(const Vec3f& color)
     const Vec3f p110{ hx, hy, -hz };
     const Vec3f p111{ hx, hy, hz };
 
+    /* Allgemein zu diesem Block:
+     * Ein Cuboid hat 6 Flaechen. Jede Flaeche wird hier aus 2 Dreiecken aufgebaut
+     * (insgesamt 12 Dreiecke = 36 Vertices).
+     *
+     * AddTriangle(vertices, a, b, c, normal, color) bedeutet:
+     * - vertices: Ziel-Array, in das die 3 neuen Vertex-Eintraege geschrieben werden
+     * - a, b, c: die drei Eckpunkte des Dreiecks (Reihenfolge bestimmt die Orientierung)
+     * - normal: konstante Flaechennormale fuer alle 3 Vertices (flat shading)
+     * - color: gemeinsame Farbe fuer alle 3 Vertices
+     */
+
+    /* +Z (Vorderseite) */
     AddTriangle(vertices, p001, p101, p111, Vec3f{ 0.0f, 0.0f, 1.0f }, color);
     AddTriangle(vertices, p001, p111, p011, Vec3f{ 0.0f, 0.0f, 1.0f }, color);
 
+    /* -Z (Rueckseite) */
     AddTriangle(vertices, p100, p000, p010, Vec3f{ 0.0f, 0.0f, -1.0f }, color);
     AddTriangle(vertices, p100, p010, p110, Vec3f{ 0.0f, 0.0f, -1.0f }, color);
 
+    /* -X (linke Seite) */
     AddTriangle(vertices, p000, p001, p011, Vec3f{ -1.0f, 0.0f, 0.0f }, color);
     AddTriangle(vertices, p000, p011, p010, Vec3f{ -1.0f, 0.0f, 0.0f }, color);
 
+    /* +X (rechte Seite) */
     AddTriangle(vertices, p101, p100, p110, Vec3f{ 1.0f, 0.0f, 0.0f }, color);
     AddTriangle(vertices, p101, p110, p111, Vec3f{ 1.0f, 0.0f, 0.0f }, color);
 
+    /* +Y (oben) */
     AddTriangle(vertices, p010, p011, p111, Vec3f{ 0.0f, 1.0f, 0.0f }, color);
     AddTriangle(vertices, p010, p111, p110, Vec3f{ 0.0f, 1.0f, 0.0f }, color);
 
+    /* -Y (unten) */
     AddTriangle(vertices, p000, p100, p101, Vec3f{ 0.0f, -1.0f, 0.0f }, color);
     AddTriangle(vertices, p000, p101, p001, Vec3f{ 0.0f, -1.0f, 0.0f }, color);
 
@@ -105,7 +129,7 @@ static std::vector<Vertex> CreateCuboid(const Vec3f& color)
 static std::vector<Vertex> CreateCylinder(const Vec3f& color, int segments = 32)
 {
     std::vector<Vertex> vertices{};
-    vertices.reserve(segments * 12);
+    vertices.reserve(segments * 12); // sidewall 6 vertices + top 3 vertices + bottom 3 vertices per segment
 
     const float radius       = 0.5f;
     const float halfHeight   = 0.5f;
@@ -117,20 +141,31 @@ static std::vector<Vertex> CreateCylinder(const Vec3f& color, int segments = 32)
 
     for ( int i = 0; i < segments; i++ )
     {
+        /* 1) Angular interval of this segment on the circle.
+         * (float) is a cast: it converts int to float so division stays floating-point.
+         */
         const float angle0 = (twoPi * (float)i) / (float)segments;
         const float angle1 = (twoPi * (float)(i + 1)) / (float)segments;
 
+        /* 2) Two points on the unit ring in the XY plane (z = 0).
+         * These are the current and next edge points around the cylinder.
+         */
         const Vec3f ring0{ cosf(angle0) * radius, sinf(angle0) * radius, 0.0f };
         const Vec3f ring1{ cosf(angle1) * radius, sinf(angle1) * radius, 0.0f };
 
+        /* 3) Lift/lower ring points to get top and bottom edge vertices. */
         const Vec3f top0 = ring0 + Vec3f{ 0.0f, 0.0f, halfHeight };
         const Vec3f top1 = ring1 + Vec3f{ 0.0f, 0.0f, halfHeight };
         const Vec3f bottom0 = ring0 + Vec3f{ 0.0f, 0.0f, -halfHeight };
         const Vec3f bottom1 = ring1 + Vec3f{ 0.0f, 0.0f, -halfHeight };
 
+        /* 4) Radial normals for smooth shading on the side wall.
+         * z = 0 keeps normals horizontal, pointing outward from the cylinder axis.
+         */
         const Vec3f sideNormal0 = Normalize(Vec3f{ ring0.x, ring0.y, 0.0f });
         const Vec3f sideNormal1 = Normalize(Vec3f{ ring1.x, ring1.y, 0.0f });
 
+        /* 5) Side wall quad as two triangles (6 vertices total). */
         vertices.push_back(Vertex{ .position = bottom0, .normal = sideNormal0, .color = color });
         vertices.push_back(Vertex{ .position = bottom1, .normal = sideNormal1, .color = color });
         vertices.push_back(Vertex{ .position = top1, .normal = sideNormal1, .color = color });
@@ -139,6 +174,9 @@ static std::vector<Vertex> CreateCylinder(const Vec3f& color, int segments = 32)
         vertices.push_back(Vertex{ .position = top1, .normal = sideNormal1, .color = color });
         vertices.push_back(Vertex{ .position = top0, .normal = sideNormal0, .color = color });
 
+        /* 6) Caps: one triangle for top, one for bottom for this segment wedge.
+         * Caps use constant normals because they are flat surfaces.
+         */
         AddTriangle(vertices, topCenter, top0, top1, topNormal, color);
         AddTriangle(vertices, bottomCenter, bottom1, bottom0, bottomNormal, color);
     }
@@ -162,27 +200,45 @@ static Vec3f SpherePoint(float radius, float theta, float phi)
 static std::vector<Vertex> CreateSphere(const Vec3f& color, int slices = 32, int stacks = 16)
 {
     std::vector<Vertex> vertices{};
+    /* Worst-case budget: most stack bands contribute 2 triangles per slice
+     * -> 6 vertices per slice/stack cell.
+     */
     vertices.reserve(slices * stacks * 6);
 
+    /* Sphere parameters and angle constants. */
     const float radius = 0.5f;
     const float pi     = 3.14159265359f;
     const float twoPi  = 6.28318530718f;
 
+    /* 1) Iterate over horizontal bands (stacks), from north to south. */
     for ( int stack = 0; stack < stacks; stack++ )
     {
+        /* 2) Polar-angle interval [phi0, phi1] for this stack band.
+         * phi is measured from +Z down to -Z.
+         */
         const float phi0 = (pi * (float)stack) / (float)stacks;
         const float phi1 = (pi * (float)(stack + 1)) / (float)stacks;
 
+        /* 3) Walk around the band in azimuth (horizontal rotation angle around the vertical axis) direction (theta). */
         for ( int slice = 0; slice < slices; slice++ )
         {
+            /* 4) Azimuth interval [theta0, theta1] for the current wedge. */
             const float theta0 = (twoPi * (float)slice) / (float)slices;
             const float theta1 = (twoPi * (float)(slice + 1)) / (float)slices;
 
+            /* 5) Four corners of the current spherical quad patch.
+             * p00/p10 lie on phi0, p01/p11 lie on phi1.
+             */
             const Vec3f p00 = SpherePoint(radius, theta0, phi0);
             const Vec3f p10 = SpherePoint(radius, theta1, phi0);
             const Vec3f p01 = SpherePoint(radius, theta0, phi1);
             const Vec3f p11 = SpherePoint(radius, theta1, phi1);
 
+            /* 6) Triangulation:
+             * - top cap stack: one triangle per slice (touches north pole)
+             * - bottom cap stack: one triangle per slice (touches south pole)
+             * - middle stacks: two triangles to cover the full quad patch
+             */
             if ( stack == 0 )
             {
                 AddSmoothTriangle(vertices, p00, p01, p11, color);
@@ -202,6 +258,7 @@ static std::vector<Vertex> CreateSphere(const Vec3f& color, int slices = 32, int
     return vertices;
 }
 
+/* Task 3.4 TODO: Create a normal-debug representation. */
 /* Creates line segments that visualize sampled vertex normals.
  * Every pair of vertices forms one GL_LINES segment from the surface point
  * into the normal direction.
@@ -211,27 +268,56 @@ static std::vector<Vertex> CreateNormalLines(const std::vector<Vertex>& source,
                                              float                      length   = 0.18f,
                                              int                        maxLines = 160)
 {
+    /* 1) Ziel-Array fuer die Debug-Linien.
+     * Jede Normale wird spaeter als Liniensegment mit 2 Vertices gespeichert.
+     */
     std::vector<Vertex> vertices{};
+
+    /* 2) Schutzfall: Wenn keine Quell-Vertices vorhanden sind,
+     * gibt es auch keine Normalen zum Visualisieren.
+     */
     if ( source.empty() )
     {
         return vertices;
     }
 
+    /* 3) Sampling-Abstand berechnen, damit wir hoechstens etwa maxLines
+     * Normalen zeichnen. Beispiel: source=1600, maxLines=160 -> step=10.
+     */
     int step = (int)source.size() / maxLines;
+
+    /* 4) Untergrenze fuer step.
+     * Bei kleinen Meshes koennte source/maxLines sonst 0 werden -> Endlosschleife.
+     */
     if ( step < 1 )
     {
         step = 1;
     }
 
+    /* 5) Ueber die Quell-Vertices laufen (mit dem berechneten Schritt).
+     * Dadurch nehmen wir entweder alle oder nur eine Teilmenge als Samples.
+     */
     for ( int i = 0; i < (int)source.size(); i += step )
     {
+        /* 6) Startpunkt der Normalenlinie: der originale Oberflaechen-Vertex. */
         const Vertex& v = source[ i ];
+
+        /* 7) Endpunkt der Normalenlinie:
+         * Position + normierte Normalenrichtung * sichtbare Linienlaenge.
+         */
         const Vec3f  endPosition = v.position + Normalize(v.normal) * length;
 
+        /* 8) Zwei Vertices pro Normale speichern.
+         * GL_LINES verbindet immer je 2 aufeinanderfolgende Vertices zu einer Linie:
+         * [v.position] -> [endPosition].
+         */
         vertices.push_back(Vertex{ .position = v.position, .normal = v.normal, .color = color });
         vertices.push_back(Vertex{ .position = endPosition, .normal = v.normal, .color = color });
     }
 
+    /* 9) Fertige Linien-Geometrie zurueckgeben.
+     * Diese wird spaeter mit glDrawArrays(GL_LINES, ...) gezeichnet.
+     */
     return vertices;
 }
 
@@ -280,6 +366,8 @@ class MatrixStack
     std::vector<Mat4f> m_stack;
 };
 
+/* Task 3.7 TODO: Use a matrix stack to build a hierarchical animated scene. */
+
 int main(int argc, char** argv)
 {
     Filesystem* pFS = Filesystem::Init(argc, argv, "assets");
@@ -307,6 +395,7 @@ int main(int argc, char** argv)
         Mat4f modelMat;
     };
 
+    /* Task 3.2 TODO: Create cylinder, cuboid, and sphere geometry. */
     /* Create all requested primitives. The crane scene below uses all three of them. */
     std::vector<Vertex> cuboidVertices      = CreateCuboid(Vec3f{ 0.9f, 0.7f, 0.2f });
     std::vector<Vertex> cylinderVertices    = CreateCylinder(Vec3f{ 0.2f, 0.7f, 0.9f });
@@ -318,6 +407,7 @@ int main(int argc, char** argv)
     std::vector<Vertex> cylinderNormalLines = CreateNormalLines(cylinderVertices, debugNormalColor, 0.20f, 120);
     std::vector<Vertex> sphereNormalLines   = CreateNormalLines(sphereVertices, debugNormalColor, 0.20f, 160);
 
+    /* Task 3.3 TODO: Upload generated geometry and debug lines to GPU buffers. */
     MeshGpu meshes[ 4 ] = {
         { 0,
           0,
@@ -364,6 +454,7 @@ int main(int argc, char** argv)
     glNamedBufferData(
         meshes[ 2 ].normalVbo, sphereNormalLines.size() * sizeof(Vertex), sphereNormalLines.data(), GL_STATIC_DRAW);
 
+    /* Task 3.1 TODO: Feed vertex color attribute to shader via VAO layout. */
     /* VAO. */
     GLuint VAO;
     glCreateVertexArrays(1, &VAO);
@@ -456,6 +547,7 @@ int main(int argc, char** argv)
         const float moveStep      = moveSpeed * (float)deltaSeconds;
         const float rotateStep    = rotateSpeed * (float)deltaSeconds;
 
+        /* Task 3.6 TODO: Implement keyboard camera translation and rotation. */
         if ( keyboardState[ SDL_SCANCODE_W ] )
         {
             camera.MoveForward(moveStep);
@@ -519,6 +611,8 @@ int main(int argc, char** argv)
         const float lightRadius = 2.6f;
         const float lightHeight = 1.4f;
         const Vec3f lightWorldPos{ cosf(elapsedSeconds) * lightRadius, lightHeight, sinf(elapsedSeconds) * lightRadius };
+        // Transform the light position from world space into view space.
+        // w = 1.0f means 'position' (not direction), so translation in viewMat is applied too.
         Vec4f       lightViewPos4 = viewMat * Vec4f{ lightWorldPos, 1.0f };
         Vec3f       lightViewPos{ lightViewPos4.x, lightViewPos4.y, lightViewPos4.z };
         meshes[ 3 ].modelMat = Translate(lightWorldPos) * Scale(Vec3f{ 0.12f, 0.12f, 0.12f });
@@ -557,6 +651,8 @@ int main(int argc, char** argv)
         glBindVertexArray(VAO);
         glUniformMatrix4fv(1, 1, GL_FALSE, viewMat.Data());
         glUniformMatrix4fv(2, 1, GL_FALSE, projMat.Data());
+
+        /* Task 3.5 TODO: Point light shading input (Lambert in fragment shader). */
         glUniform3fv(3, 1, lightViewPos.Data());
 
         glUniform1i(4, 0);
@@ -585,6 +681,7 @@ int main(int argc, char** argv)
 
         const float craneYaw = sinf(elapsedSeconds * 0.7f) * 35.0f;
 
+        /* Task 3.7 TODO: Draw animated hierarchical model with stack depth >= 3. */
         MatrixStack craneStack{};
         craneStack.Translate(Vec3f{ 0.0f, -0.65f, 0.0f });
 

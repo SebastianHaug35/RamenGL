@@ -200,7 +200,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </ProjectReference>
-    <ProjectReference Include="C:\Users\Nutzer\master\RamenGL\build-codex\tasks_src\task03\ALL_BUILD.vcxproj">
+    <ProjectReference Include="C:\Users\Nutzer\master\RamenGL\build-codex\dependencies\tinyobjloader\ALL_BUILD.vcxproj">
       <Project>{4B0BFCD2-670E-3383-8910-43F3E3985A3F}</Project>
       <Name>ALL_BUILD</Name>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

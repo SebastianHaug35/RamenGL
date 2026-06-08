@@ -306,3 +306,79 @@ gesampelt wird.
 - **Yaw**: Drehung um die lokale Hochachse der Kamera.
 - **Pitch**: Drehung um die Seitenachse der Kamera.
 - **Forward/Right/Up**: Lokale Vorwaerts-, Rechts- und Hochrichtung der Kamera.
+
+## 5.2 Environment Mapping
+
+Fuer die Reflexionen wurde zusaetzlich das Modell `teapot.obj` geladen und mit
+einem eigenen Shaderpaar gerendert. Der Skybox-Wuerfel und das Modell greifen
+auf dieselbe Cubemap zu, benutzen sie aber unterschiedlich:
+
+- die Skybox zeigt die Umgebung direkt,
+- das Modell sampelt die Cubemap mit einer berechneten Reflexionsrichtung.
+
+Im Vertexshader des Modells werden Weltposition und Weltnormale ausgegeben. Im
+Fragmentshader wird daraus der Einfallsvektor von der Kamera zum Fragment
+gebildet und mit `reflect(...)` gespiegelt:
+
+```glsl
+vec3 viewDir = normalize(out_WorldPos - u_CameraWorldPos);
+vec3 reflectionDir = reflect(viewDir, normalize(out_WorldNormal));
+outColor = texture(u_Cubemap, reflectionDir);
+```
+
+Wichtig ist dabei, dass Kamera, Fragmentposition und Normale alle im gleichen
+Koordinatensystem vorliegen. Hier wird dafuer durchgaengig World-Space
+verwendet.
+
+### Glossar
+
+- **Environment Mapping**: Simulation von Spiegelungen durch Abtasten einer Umgebungstextur.
+- **reflect(...)**: GLSL-Funktion zur Berechnung der perfekten Spiegelrichtung.
+- **World-Space**: Koordinatensystem der Szene nach Anwendung der Model-Matrix.
+- **Einfallsvektor**: Richtung, aus der der Blick oder Lichtstrahl auf die Flaeche trifft.
+
+## 5.3 FPS Camera / Unendlich entfernter Horizont
+
+Fuer den FPS-Modus wurde ein ImGui-Schalter ergaenzt, der zwischen zwei
+Skybox-Verhalten umschaltet:
+
+- **Escape-Modus**: die Cubemap bleibt fest im Ursprung und kann verlassen werden,
+- **FPS-Modus**: die Cubemap folgt der Kameraposition und bleibt dadurch immer um die Kamera herum.
+
+Im FPS-Modus wird die Skybox pro Frame an die Kameraposition gesetzt:
+
+```cpp
+Mat4f skyboxModelMat = Translate(camera.GetPosition()) * Scale(Vec3f{ 20.0f, 20.0f, 20.0f });
+```
+
+Zusaetzlich wird waehrend des Skybox-Draws `glDepthMask(GL_FALSE)` gesetzt,
+damit der Hintergrund nicht in den Depth-Buffer schreibt und das reflektierende
+Modell davor normal gerendert werden kann.
+
+### Glossar
+
+- **FPS-Modus**: Skybox bleibt zentriert auf der Kamera und wirkt unendlich weit entfernt.
+- **Escape-Modus**: Skybox bleibt ortsfest in der Szene.
+- **glDepthMask**: Steuert, ob Draw-Calls in den Tiefenpuffer schreiben duerfen.
+- **Depth-Buffer**: Speicher fuer Tiefenwerte zur Verdeckungsberechnung.
+
+## Bauen und Starten
+
+Zum Konfigurieren und Bauen von `task05`:
+
+```powershell
+cmake -S . -B build
+cmake --build build --target task05 --config Debug
+```
+
+Zum Starten der Anwendung:
+
+```powershell
+.\build\Debug\task05.exe assets\
+```
+
+## Wie geht es weiter?
+
+Mit 5.3 ist Task 5 fachlich abgeschlossen. Danach bleiben nur noch
+Abschlussarbeiten wie Sichtpruefung, Dokumentation, optionales Aufraeumen des
+Codes und gegebenenfalls der Export der Gesamtdokumentation.

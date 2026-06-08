@@ -374,7 +374,6 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <ScanSourceForModuleDependencies Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</ScanSourceForModuleDependencies>
       <ScanSourceForModuleDependencies Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</ScanSourceForModuleDependencies>
     </ClCompile>
-    <ClInclude Include="C:\Users\Nutzer\master\RamenGL\dependencies\tiny_obj_loader.h" />
     <ClInclude Include="C:\Users\Nutzer\master\RamenGL\dependencies\stb_image.h" />
     <ClCompile Include="C:\Users\Nutzer\master\RamenGL\dependencies\imgui\imgui.cpp" />
     <ClCompile Include="C:\Users\Nutzer\master\RamenGL\dependencies\imgui\imgui_impl_sdl3.cpp" />

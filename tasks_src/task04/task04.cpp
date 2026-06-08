@@ -23,11 +23,105 @@
 #define NUM_QUAD_VERTICES 4
 #define NUM_QUAD_INDICES 6
 
-static Vertex   quadVertices[ NUM_QUAD_VERTICES ] = { { .position = Vec3f{ -1.0f, -1.0f, 0.0f } },
-                                                      { .position = Vec3f{ 1.0f, -1.0f, 0.0f } },
-                                                      { .position = Vec3f{ 1.0f, 1.0f, 0.0f } },
-                                                      { .position = Vec3f{ -1.0f, 1.0f, 0.0f } } };
+static Vertex quadVertices[ NUM_QUAD_VERTICES ] = {
+    {
+        .position = Vec3f{ -1.0f, -1.0f, 0.0f },
+        .uv       = Vec3f{ 0.0f, 1.0f, 0.0f },
+    },
+    {
+        .position = Vec3f{ 1.0f, -1.0f, 0.0f },
+        .uv       = Vec3f{ 1.0f, 1.0f, 0.0f },
+    },
+    {
+        .position = Vec3f{ 1.0f, 1.0f, 0.0f },
+        .uv       = Vec3f{ 1.0f, 0.0f, 0.0f },
+    },
+    {
+        .position = Vec3f{ -1.0f, 1.0f, 0.0f },
+        .uv       = Vec3f{ 0.0f, 0.0f, 0.0f },
+    },
+};
 static uint16_t quadIndices[ NUM_QUAD_INDICES ]   = { 0, 1, 2, 2, 3, 0 };
+
+static Vec3f SpherePoint(float radius, float theta, float phi)
+{
+    const float sinPhi = sinf(phi);
+
+    return Vec3f{
+        radius * cosf(theta) * sinPhi,
+        radius * sinf(theta) * sinPhi,
+        radius * cosf(phi),
+    };
+}
+
+static Vertex MakeSphereVertex(float radius, float theta, float phi)
+{
+    Vec3f position = SpherePoint(radius, theta, phi);
+
+    float u = theta / 6.28318530718f;
+    float v = phi / 3.14159265359f;
+
+    return Vertex{
+        .position = position,
+        .normal   = Normalize(position),
+        .color    = Vec3f{ 1.0f, 1.0f, 1.0f },
+        .uv       = Vec3f{ u, v, 0.0f },
+    };
+}
+
+static std::vector<Vertex> CreateTexturedSphere(int slices = 64, int stacks = 32)
+{
+    std::vector<Vertex> vertices{};
+
+    const float radius = 1.0f;
+    const float pi     = 3.14159265359f;
+    const float twoPi  = 6.28318530718f;
+
+    vertices.reserve(slices * stacks * 6);
+
+    for ( int stack = 0; stack < stacks; stack++ )
+    {
+        float phi0 = pi * (float)stack / (float)stacks;
+        float phi1 = pi * (float)(stack + 1) / (float)stacks;
+
+        for ( int slice = 0; slice < slices; slice++ )
+        {
+            float theta0 = twoPi * (float)slice / (float)slices;
+            float theta1 = twoPi * (float)(slice + 1) / (float)slices;
+
+            Vertex p00 = MakeSphereVertex(radius, theta0, phi0);
+            Vertex p10 = MakeSphereVertex(radius, theta1, phi0);
+            Vertex p01 = MakeSphereVertex(radius, theta0, phi1);
+            Vertex p11 = MakeSphereVertex(radius, theta1, phi1);
+
+            if ( stack == 0 )
+            {
+                vertices.push_back(p00);
+                vertices.push_back(p11);
+                vertices.push_back(p01);
+            }
+            else if ( stack == stacks - 1 )
+            {
+                vertices.push_back(p00);
+                vertices.push_back(p10);
+                vertices.push_back(p11);
+            }
+            else
+            {
+                vertices.push_back(p00);
+                vertices.push_back(p10);
+                vertices.push_back(p11);
+
+                vertices.push_back(p00);
+                vertices.push_back(p11);
+                vertices.push_back(p01);
+            }
+        }
+    }
+
+    return vertices;
+}
+
 
 int main(int argc, char** argv)
 {
@@ -44,15 +138,45 @@ int main(int argc, char** argv)
     }
 
     Image image{};
-    if ( !image.Load("textures/linux-quake-512x512.png") )
+    if ( !image.Load("textures/world.200404.3x5400x2700.jpg") )
     {
         fprintf(stderr, "Could not load texture file.\n");
     }
 
+    GLuint textureHandle = 0;
+    glCreateTextures(GL_TEXTURE_2D, 1, &textureHandle);
+
+    glTextureParameteri(textureHandle, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(textureHandle, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glTextureParameteri(textureHandle, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTextureParameteri(textureHandle, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glTextureStorage2D(
+        textureHandle,
+        1,
+        GL_RGBA8,
+        image.GetWidth(),
+        image.GetHeight());
+
+    glTextureSubImage2D(
+        textureHandle,
+        0,
+        0,
+        0,
+        image.GetWidth(),
+        image.GetHeight(),
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        image.Data());
+
+    std::vector<Vertex> sphereVertices = CreateTexturedSphere();
+
+
     /* Create GPU buffer and upload model's vertices. */
     GLuint VBO;
     glCreateBuffers(1, &VBO);
-    glNamedBufferData(VBO, NUM_QUAD_VERTICES * sizeof(Vertex), quadVertices, GL_STATIC_DRAW);
+    glNamedBufferData(VBO, sphereVertices.size() * sizeof(Vertex), sphereVertices.data(), GL_STATIC_DRAW);
     GLuint EBO;
     glCreateBuffers(1, &EBO);
     glNamedBufferData(EBO, NUM_QUAD_INDICES * sizeof(uint16_t), quadIndices, GL_STATIC_DRAW);
@@ -106,6 +230,8 @@ int main(int argc, char** argv)
         double msPerFrame    = (ticksPerFrame / (double)ticksPerSecond) * 1000.0;
         startCounter         = SDL_GetPerformanceCounter();
 
+        float deltaSeconds = (float)(msPerFrame / 1000.0);
+
         SDL_Event e;
         while ( SDL_PollEvent(&e) )
         {
@@ -154,10 +280,13 @@ int main(int argc, char** argv)
 
         shader.Use();
         glBindVertexArray(VAO);
+        glBindTextureUnit(0, textureHandle);
+
         glUniformMatrix4fv(0, 1, GL_FALSE, modelMat.Data());
         glUniformMatrix4fv(1, 1, GL_FALSE, viewMat.Data());
         glUniformMatrix4fv(2, 1, GL_FALSE, projMat.Data());
-        glDrawElementsBaseVertex(GL_TRIANGLES, NUM_QUAD_INDICES, GL_UNSIGNED_SHORT, 0, 0);
+
+        glDrawArrays(GL_TRIANGLES, 0, (GLsizei)sphereVertices.size());
 
         SDL_GL_SwapWindow(pRamen->GetWindow());
 
@@ -166,8 +295,11 @@ int main(int argc, char** argv)
 
     /* GL Resources shutdown. */
     shader.Delete();
+    glDeleteTextures(1, &textureHandle);
     glDeleteBuffers(1, &VBO);
     glDeleteVertexArrays(1, &VAO);
+
+
 
     /* Ramen Shutdown */
     pRamen->Shutdown();

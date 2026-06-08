@@ -178,9 +178,25 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </ProjectReference>
+    <ProjectReference Include="C:\Users\Nutzer\master\RamenGL\build-codex\tasks_src\task02\task02.vcxproj">
+      <Project>{8919B5EF-F06E-3170-88D8-014F8244F981}</Project>
+      <Name>task02</Name>
+    </ProjectReference>
     <ProjectReference Include="C:\Users\Nutzer\master\RamenGL\build-codex\tasks_src\task03\task03.vcxproj">
       <Project>{47D17090-F6C1-36BA-8F7B-EBC214DEEEEC}</Project>
       <Name>task03</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Nutzer\master\RamenGL\build-codex\tasks_src\task04\task04.vcxproj">
+      <Project>{3308E1AF-655E-37B6-8882-1902A08817F7}</Project>
+      <Name>task04</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Nutzer\master\RamenGL\build-codex\tasks_src\task05\task05.vcxproj">
+      <Project>{9A479A1D-A1C8-3AC5-BCD8-481640D30EF0}</Project>
+      <Name>task05</Name>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\Nutzer\master\RamenGL\build-codex\tasks_src\task06\task06.vcxproj">
+      <Project>{DDBC14E3-E63B-39BF-B754-5A432391A0B6}</Project>
+      <Name>task06</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -50,6 +50,9 @@ Wie testen Sie, ob Ihre Normalenvektoren korrekt sind und auch korrekt
 im Shader sind? Nutzen Sie mindestens zwei Möglichkeiten.
 Dokumentieren Sie Ihr Vorgehen.
 
+Normalen als Linien angezeigt
+Flächen nach Normalenrichtung eingefärbt
+
 ## 3.5) Beleuchtung
 Im Moment ist die Szene noch sehr flach, da kein Beleuchtungsmodell
 implementiert wurde. Erweitern Sie ihren Shadercode, sodass

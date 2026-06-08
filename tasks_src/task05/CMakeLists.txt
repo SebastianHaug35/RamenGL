@@ -44,5 +44,6 @@ target_include_directories(task05 PUBLIC
     ../../dependencies/)
 target_link_libraries(task05
     PRIVATE SDL3::SDL3
-    PRIVATE physfs)
+    PRIVATE physfs
+    PRIVATE tinyobjloader)
 

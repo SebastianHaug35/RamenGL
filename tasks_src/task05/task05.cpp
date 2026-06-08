@@ -86,11 +86,23 @@ int main(int argc, char** argv)
         fprintf(stderr, "Could not load shader.\n");
     }
 
+    Shader reflectShader{};
+    if ( !reflectShader.Load("shaders/task05_reflect.vert", "shaders/task05_reflect.frag") )
+    {
+        fprintf(stderr, "Could not load reflection shader.\n");
+    }
+
     /* Create camera */
     Camera camera(Vec3f{ 0.0f, 0.0f, 5.0f });
     camera.RotateAroundSide(0.0f);
 
     std::vector<Vertex> cubemapVertices = CreateInwardCube();
+
+    Model reflectiveModel{};
+    if ( !reflectiveModel.Load("models/teapot.obj") )
+    {
+        fprintf(stderr, "Could not load reflective model.\n");
+    }
 
     Image cubemapPosX{};
     Image cubemapNegX{};
@@ -184,23 +196,42 @@ int main(int argc, char** argv)
                         cubemapNegZ.Data());
 
     /* Model mat*/
-    Mat4f modelMat = Mat4f::Identity();
+    Mat4f modelMat = Translate(Vec3f{ 0.0f, -1.0f, 0.0f }) * Scale(Vec3f{ 0.25f, 0.25f, 0.25f });
+    Mat4f escapeSkyboxMat = Scale(Vec3f{ 20.0f, 20.0f, 20.0f });
 
-    GLuint VAO;
-    glCreateVertexArrays(1, &VAO);
-    GLuint VBO = 0;
-    glCreateBuffers(1, &VBO);
+    GLuint cubemapVAO = 0;
+    glCreateVertexArrays(1, &cubemapVAO);
+    GLuint cubemapVBO = 0;
+    glCreateBuffers(1, &cubemapVBO);
     glNamedBufferData(
-        VBO, cubemapVertices.size() * sizeof(Vertex), cubemapVertices.data(), GL_STATIC_DRAW);
-    glVertexArrayVertexBuffer(VAO, 0, VBO, 0, sizeof(Vertex));
+        cubemapVBO, cubemapVertices.size() * sizeof(Vertex), cubemapVertices.data(), GL_STATIC_DRAW);
+    glVertexArrayVertexBuffer(cubemapVAO, 0, cubemapVBO, 0, sizeof(Vertex));
 
-    glVertexArrayAttribFormat(VAO, 0, 3, GL_FLOAT, GL_FALSE, 0);
-    glEnableVertexArrayAttrib(VAO, 0);
-    glVertexArrayAttribBinding(VAO, 0, 0);
+    glVertexArrayAttribFormat(cubemapVAO, 0, 3, GL_FLOAT, GL_FALSE, 0);
+    glEnableVertexArrayAttrib(cubemapVAO, 0);
+    glVertexArrayAttribBinding(cubemapVAO, 0, 0);
 
-    glVertexArrayAttribFormat(VAO, 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float));
-    glEnableVertexArrayAttrib(VAO, 1);
-    glVertexArrayAttribBinding(VAO, 1, 0);
+    glVertexArrayAttribFormat(cubemapVAO, 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float));
+    glEnableVertexArrayAttrib(cubemapVAO, 1);
+    glVertexArrayAttribBinding(cubemapVAO, 1, 0);
+
+    GLuint modelVAO = 0;
+    glCreateVertexArrays(1, &modelVAO);
+    GLuint modelVBO = 0;
+    glCreateBuffers(1, &modelVBO);
+    glNamedBufferData(modelVBO,
+                      reflectiveModel.GetVertices().size() * sizeof(Vertex),
+                      reflectiveModel.GetVertices().data(),
+                      GL_STATIC_DRAW);
+    glVertexArrayVertexBuffer(modelVAO, 0, modelVBO, 0, sizeof(Vertex));
+
+    glVertexArrayAttribFormat(modelVAO, 0, 3, GL_FLOAT, GL_FALSE, 0);
+    glEnableVertexArrayAttrib(modelVAO, 0);
+    glVertexArrayAttribBinding(modelVAO, 0, 0);
+
+    glVertexArrayAttribFormat(modelVAO, 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float));
+    glEnableVertexArrayAttrib(modelVAO, 1);
+    glVertexArrayAttribBinding(modelVAO, 1, 0);
 
     /* Some global GL states */
     glEnable(GL_DEPTH_TEST);
@@ -209,6 +240,8 @@ int main(int argc, char** argv)
     // glDisable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
+
+    bool fpsSkyboxMode = false;
 
     /* Main loop */
     bool isRunning = true;
@@ -308,6 +341,9 @@ int main(int argc, char** argv)
         Mat4f viewMat = LookAt(
             camera.GetPosition(), camera.GetPosition() + camera.GetForward(), camera.GetUp()); // Mat4f::Identity();
 
+        Mat4f skyboxModelMat = fpsSkyboxMode ? Translate(camera.GetPosition()) * Scale(Vec3f{ 20.0f, 20.0f, 20.0f })
+                                             : escapeSkyboxMat;
+
         /* Projection mat */
         float aspect  = (float)windowWidth / (float)windowHeight;
         Mat4f projMat = PerspectiveProjection(TO_RAD(60.0f), aspect, 0.01f, 500.0f);
@@ -329,6 +365,9 @@ int main(int argc, char** argv)
         ImGui::Separator();
         ImGui::Text("5.1.2 Cubemap-Sampling aktiv");
         ImGui::Text("5.1.3 Kamera: W/A/S/D, Q/E, Pfeiltasten");
+        ImGui::Text("5.2 Reflexionsmodell: teapot.obj");
+        ImGui::Checkbox("5.3 FPS Skybox Mode", &fpsSkyboxMode);
+        ImGui::Text("Skybox-Modus: %s", fpsSkyboxMode ? "FPS" : "Escape");
         ImGui::Text("Camera pos: %.2f %.2f %.2f",
                 camera.GetPosition().x,
                 camera.GetPosition().y,
@@ -343,13 +382,24 @@ int main(int argc, char** argv)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
 
+        glDepthMask(GL_FALSE);
         shader.Use();
-        glBindVertexArray(VAO);
-        glUniformMatrix4fv(0, 1, GL_FALSE, modelMat.Data());
+        glBindVertexArray(cubemapVAO);
+        glUniformMatrix4fv(0, 1, GL_FALSE, skyboxModelMat.Data());
         glUniformMatrix4fv(1, 1, GL_FALSE, viewMat.Data());
         glUniformMatrix4fv(2, 1, GL_FALSE, projMat.Data());
         glBindTextureUnit(0, cubemapHandle);
         glDrawArrays(GL_TRIANGLES, 0, (GLsizei)cubemapVertices.size());
+        glDepthMask(GL_TRUE);
+
+        reflectShader.Use();
+        glBindVertexArray(modelVAO);
+        glUniformMatrix4fv(0, 1, GL_FALSE, modelMat.Data());
+        glUniformMatrix4fv(1, 1, GL_FALSE, viewMat.Data());
+        glUniformMatrix4fv(2, 1, GL_FALSE, projMat.Data());
+        glUniform3fv(3, 1, camera.GetPosition().Data());
+        glBindTextureUnit(0, cubemapHandle);
+        glDrawArrays(GL_TRIANGLES, 0, (GLsizei)reflectiveModel.NumVertices());
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -360,9 +410,12 @@ int main(int argc, char** argv)
 
     /* GL Resources shutdown. */
     shader.Delete();
+    reflectShader.Delete();
     glDeleteTextures(1, &cubemapHandle);
-    glDeleteBuffers(1, &VBO);
-    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &cubemapVBO);
+    glDeleteVertexArrays(1, &cubemapVAO);
+    glDeleteBuffers(1, &modelVBO);
+    glDeleteVertexArrays(1, &modelVAO);
 
     /* Ramen Shutdown */
     pRamen->Shutdown();

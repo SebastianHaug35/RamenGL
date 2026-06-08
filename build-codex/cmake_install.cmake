@@ -39,6 +39,11 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
+  include("C:/Users/Nutzer/master/RamenGL/build-codex/dependencies/tinyobjloader/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
   include("C:/Users/Nutzer/master/RamenGL/build-codex/tasks_src/cmake_install.cmake")
 endif()
 

@@ -80,6 +80,21 @@ class Model
                 m_Vertices.push_back(v);
             }
         }
+
+        if ( attrib.normals.empty() )
+        {
+            for ( size_t i = 0; i + 2 < m_Vertices.size(); i += 3 )
+            {
+                const Vec3f edgeAB = m_Vertices[ i + 1 ].position - m_Vertices[ i ].position;
+                const Vec3f edgeAC = m_Vertices[ i + 2 ].position - m_Vertices[ i ].position;
+                const Vec3f faceNormal = Normalize(Cross(edgeAB, edgeAC));
+
+                m_Vertices[ i ].normal = faceNormal;
+                m_Vertices[ i + 1 ].normal = faceNormal;
+                m_Vertices[ i + 2 ].normal = faceNormal;
+            }
+        }
+
         printf("m_Vertices.size(): %lu\n", m_Vertices.size());
 
         modelFile.Destroy();
